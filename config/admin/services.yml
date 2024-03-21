@@ -1,0 +1,36 @@
+services:
+  _defaults:
+    public: true
+
+  SimPaypl\PrestaShop\Controller\SimpayConfigurationAdminController:
+    arguments:
+      - '@prestashop.module.simpay.admin.form.simpay_form_data_handler'
+    tags:
+      - { name: 'controller.service_arguments' }
+
+  # Demo configuration text form
+  prestashop.module.simpay.admin.form.simpay_form_type:
+    class: 'SimPaypl\PrestaShop\Form\SimpayFormType'
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
+
+  prestashop.module.simpay.admin.form.simpay_data_configuration:
+    class: 'SimPaypl\PrestaShop\Form\SimpayDataConfiguration'
+    arguments:
+      - '@prestashop.adapter.legacy.configuration'
+
+  prestashop.module.simpay.admin.form.simpay_form_data_provider:
+    class: 'SimPaypl\PrestaShop\Form\SimpayFormDataProvider'
+    arguments:
+      - '@prestashop.module.simpay.admin.form.simpay_data_configuration'
+
+  prestashop.module.simpay.admin.form.simpay_form_data_handler:
+    class: 'PrestaShop\PrestaShop\Core\Form\Handler'
+    arguments:
+      - '@form.factory'
+      - '@prestashop.core.hook.dispatcher'
+      - '@prestashop.module.simpay.admin.form.simpay_form_data_provider'
+      - 'SimPaypl\PrestaShop\Form\SimpayFormType'
+      - 'SimpayConfiguration'

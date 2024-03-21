@@ -1,0 +1,38 @@
+services:
+  prestashop:
+    image: prestashop/prestashop:8.1.3-apache
+    environment:
+      - DB_SERVER=db
+      - DB_NAME=prestashop
+      - DB_USER=prestashop
+      - DB_PASSWD=prestashop
+      - PS_INSTALL_AUTO=1
+      - PS_DEV_MODE=1
+      - PS_DOMAIN=localhost:28080
+      - ADMIN_MAIL=demo@simpay.pl
+      - ADMIN_PASSWD=simpay_demo
+      - _PS_ROOT_DIR_=/var/www/html
+    depends_on:
+      - db
+    ports:
+      - 28080:80
+    volumes:
+      - prestashop_data:/var/www/html
+      - .:/var/www/html/modules/simpay
+
+  db:
+    image: mysql:8.0.36
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=prestashop
+      - MYSQL_USER=prestashop
+      - MYSQL_PASSWORD=prestashop
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+    driver: local
+  prestashop_data:
+    driver: local

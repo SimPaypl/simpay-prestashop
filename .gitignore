@@ -1,0 +1,6 @@
+ps_root_dir/
+vendor/
+
+composer.lock
+.php-cs-fixer.php
+.php-cs-fixer.cache
