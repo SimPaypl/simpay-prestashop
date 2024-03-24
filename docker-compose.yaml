@@ -10,7 +10,7 @@ services:
       - PS_DEV_MODE=1
       - PS_DOMAIN=localhost:28080
       - ADMIN_MAIL=demo@simpay.pl
-      - ADMIN_PASSWD=simpay_demo
+      - ADMIN_PASSWD=demo_simpay
       - _PS_ROOT_DIR_=/var/www/html
     depends_on:
       - db
