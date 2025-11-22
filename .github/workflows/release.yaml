@@ -24,7 +24,7 @@ jobs:
       - name: Prepare zip package
         run: |
           mkdir simpay
-          cp -r config controllers mails src views composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
+          cp -r config controllers mails src views vendor composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
           zip -r simpay-prestashop-${{ github.ref_name }}.zip simpay
 
       - name: Release
