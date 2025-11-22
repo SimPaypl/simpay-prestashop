@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    public: true
+
+  prestashop.module.simpay.front.payment_client_factory:
+    class: 'SimPaypl\PrestaShop\PaymentClientFactory'
+    arguments:
+      - '@prestashop.adapter.legacy.configuration'
+
+  prestashop.module.simpay.front.payment_client:
+    class: 'Simpay\PaymentInterface'
+    factory: '@prestashop.module.simpay.front.payment_client_factory'

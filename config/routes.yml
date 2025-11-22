@@ -1,0 +1,8 @@
+simpay_configuration:
+  path: /simpay/configuration
+  methods: [GET, POST]
+  defaults:
+    _controller: SimPaypl\PrestaShop\Controller\SimpayConfigurationAdminController::configureAction
+    # Needed to work with tab system
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'
