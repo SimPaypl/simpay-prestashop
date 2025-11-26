@@ -200,7 +200,7 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             ]),
             'antifraud' => [
                 'useragent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-                'systemId' => $this->context->customer->is_guest ? null : $this->context->customer->id,
+                'systemId' => $this->context->customer->is_guest ? null : (string)$this->context->customer->id,
             ],
             'returns' => [
                 'success' => $successReturnUrl,
