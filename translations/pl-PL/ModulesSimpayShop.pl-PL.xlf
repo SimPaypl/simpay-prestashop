@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin024kshlwkyxogluqvpr" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="a6b0eb0cf7af701790265d8685db4ebd">
+        <source>We could not initialize the payment. Please try again or contact the shop.</source>
+        <target>Nie udało się zainicjować płatności. Spróbuj ponownie lub skontaktuj się ze sklepem.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="88be462393cefdff076d13eca7338ea2">
+        <source>SimPay</source>
+        <target>SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e2b7dec8fa4b498156dfee6e4c84b156">
+        <source>This payment method is not available.</source>
+        <target>Ta metoda płatności jest niedostępna.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b911f5a69f198f1eedf06eaf5b59d6fb">
+        <source>SimPay module module isn't active.</source>
+        <target>Moduł SimPay nie jest aktywny.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a240fa27925a635b08dc28c9e4f9216d">
+        <source>Order</source>
+        <target>Zamówienie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d3287dd51f6daf210fd5c49d2cb566da">
+        <source>Pay with BLIK</source>
+        <target>Zapłać BLIKIEM</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f233de11017582ab42e24e0dd2cea51">
+        <source>BLIK Pay Later</source>
+        <target>BLIK Płacę Później</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7e6afd2ccbff374aaefc8ca6676d1d11">
+        <source><![CDATA[Learn more at <a href=":url" target="_blank">:url</a>]]></source>
+        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">:url</a>]]></target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3afd983fc0ed0cab779eddcbed5accbe">
+        <source>PayPo – Buy now, pay later</source>
+        <target>PayPo – kup teraz, zapłać później</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="943260a37d0ce1db9ba58daedc22e49b">
+        <source><![CDATA[Learn more at <a href=":url" target="_blank">paypo.pl</a>]]></source>
+        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">paypo.pl</a>]]></target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="191ecde65ec830eb9e487344b12109a6">
+        <source>SimPay online payment</source>
+        <target>Płatność online SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c8d46e411afd1674eeb3295a8035563f">
+        <source>Redirecting… please wait</source>
+        <target>Trwa przekierowanie… proszę czekać</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="054fba7e9e5b01380b5f5418e5d2f0e8">
+        <source>If you are not redirected automatically, please</source>
+        <target>Jeśli nie nastąpi automatyczne przekierowanie,</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a4ea91cd0d1ea33d8113457644dd6157">
+        <source>click here</source>
+        <target>kliknij tutaj</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="94e7103b85b3c4e3067d7739545be9f6">
+        <source>SimPay – payment issue</source>
+        <target>SimPay – problem z płatnością</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="71f337f91c90139a2edfe1b88ebb118f">
+        <source>There was an issue with your payment. You will receive a link to retry shortly.</source>
+        <target>Wystąpił problem z płatnością. Wkrótce otrzymasz link umożliwiający ponowienie płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8ed009d18fe9f62e1ec0f480ad15c541">
+        <source>payment, issue, retry</source>
+        <target>płatność, problem, ponowienie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ef053453f9160b907a616cb1e79d3798">
+        <source>Payment issue</source>
+        <target>Problem z płatnością</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="16efca37ad759fc1a568ac0896098be8">
+        <source>There was an issue while processing your payment. You will receive a link to retry the payment shortly.</source>
+        <target>Podczas przetwarzania płatności wystąpił problem. Wkrótce otrzymasz link do ponowienia płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="edcd98fc254c4992195b4beb893069cb">
+        <source>If you do not receive the link within a few minutes, you can try to create order again.</source>
+        <target>Jeśli w ciągu kilku minut nie otrzymasz linku, możesz spróbować złożyć zamówienie ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c317cba4fb4b3f968f72d65cc0a21537">
+        <source>Back to shop</source>
+        <target>Wróć do sklepu</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

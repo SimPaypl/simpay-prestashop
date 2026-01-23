@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin024kshlwkyxogluqvpr" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="efa03818f9d0671caa65a072d1d95acb">
+        <source>SimPay Payments</source>
+        <target>Płatności SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a93ada4fa1a542b1d40f5b9248d871d">
+        <source>Accept fast and secure online payments with SimPay – BLIK, online transfers and instant payments. Easy integration and smooth checkout for your customers.</source>
+        <target>Akceptuj szybkie i bezpieczne płatności online z SimPay – BLIK, przelewy online oraz płatności natychmiastowe. Prosta integracja i płynny proces płatności dla Twoich klientów.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="533937acf0e84c92e787614bbb16a7a0">
+        <source>Are you sure you want to uninstall? You will lose all your settings!</source>
+        <target>Czy na pewno chcesz odinstalować moduł? Wszystkie ustawienia zostaną utracone!</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5326bc418f9978e84b7839c7740ab74f">
+        <source>IPN URL address</source>
+        <target>Adres URL IPN</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="89a44442531ec63f92876a2bcc8b0483">
+        <source>Online payments → Services → Details → Settings → IPN URL address</source>
+        <target>Płatności online → Usługi → Szczegóły → Ustawienia → Adres URL IPN</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="37e31370e4ab230ff6fba12cc6390aff">
+        <source>API password</source>
+        <target>Hasło API</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b563c30bd4207a24730330169b0db7b">
+        <source>Customer account → API → Details → Password / Bearer Token</source>
+        <target>Konto klienta → API → Szczegóły → Hasło / Bearer Token</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0612c008c0ceac34b53b5ca6a5ac4814">
+        <source>Service ID</source>
+        <target>ID usługi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="62dde4de4fecf1558ece35fd09c0c16f">
+        <source>Online payments → Services → Details → Service ID</source>
+        <target>Płatności online → Usługi → Szczegóły → ID usługi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="318499327159739418a909cff53b3278">
+        <source>IPN signature key</source>
+        <target>Klucz sygnatury IPN</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f00a8980509957dd60d4f2007e91a2ee">
+        <source>Online payments → Services → Details → Settings → IPN signature key</source>
+        <target>Płatności online → Usługi → Szczegóły → Ustawienia → Klucz sygnatury IPN</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3704cb800378ee3dbed7d90369b09a4e">
+        <source>Verify incoming IP address in IPN notifications</source>
+        <target>Weryfikuj adres IP nadawcy w powiadomieniach IPN</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5879877614f1cad8e40e45b52a72d527">
+        <source>If your shop is using Cloudflare, we do not recommend enabling this option.</source>
+        <target>Jeśli sklep korzysta z Cloudflare, nie zalecamy włączania tej opcji.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8405a058d3632bb1b939a2338b9ff245">
+        <source>Show payment methods inside the SimPay payment</source>
+        <target>Wyświetl metody płatności w ramach płatności SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="238028f77873d85f3d6f9b72d553d896">
+        <source>When enabled, customers will see the list of available payment methods after selecting SimPay. The order of methods is taken from settings below.</source>
+        <target>Po włączeniu tej opcji klienci zobaczą listę dostępnych metod płatności po wybraniu SimPay. Kolejność metod jest ustalana w ustawieniach poniżej.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ce38d65057ab480577e30f2af53f57f">
+        <source>List of payment methods inside the SimPay payment</source>
+        <target>Lista metod płatności w ramach SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c5bdb8390ee7e26a76d615f970664ac4">
+        <source>Show BLIK as an additional payment method</source>
+        <target>Wyświetl BLIK jako dodatkową metodę płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5b6aaf8d743da023f520b1d9deb8e0d9">
+        <source>Show BLIK Pay Later as an additional payment method</source>
+        <target>Wyświetl BLIK Płacę Później jako dodatkową metodę płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e35b666d13d0c2622c3f57ee9b3ed7a5">
+        <source>Show PayPo as an additional payment method</source>
+        <target>Wyświetl PayPo jako dodatkową metodę płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="60f4b3723660e9d78a1a6cc274dcfb94">
+        <source>Configuring the SimPay connection to the store</source>
+        <target>Konfiguracja połączenia SimPay ze sklepem</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ac277d8c8c972021fd8cbe9f48005406">
+        <source>Before configuring the payment gateway, make sure you have entered the "IPN URL address" in the SimPay panel.</source>
+        <target>Przed skonfigurowaniem bramki płatności upewnij się, że w panelu SimPay został wpisany adres URL IPN.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fae4dc87e3bcf6d7d2c8b217b73bffc9">
+        <source>Configuration of displayed payments</source>
+        <target>Konfiguracja wyświetlanych płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c9cc8cce247e49bae79f15173ce97354">
+        <source>Save</source>
+        <target>Zapisz</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="42d468157f16fe849d58749fd387e8db">
+        <source>If the payment method you are looking for is not available, you can add and activate it in the SimPay panel in the "Payment channels" section.</source>
+        <target>Jeśli metoda płatności, której szukasz, nie jest dostępna, możesz ją dodać i aktywować w panelu SimPay w sekcji „Kanały płatności”.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="650c28c301e392b651b274e8ea7a7766">
+        <source>Payment methods list</source>
+        <target>Lista metod płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d447e39017df7e3b94a98967527bc35">
+        <source>All payment methods</source>
+        <target>Wszystkie metody płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="17c2adc37c72a035e76d8eadd98c6708">
+        <source>Selected methods</source>
+        <target>Wybrane metody</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3f278951fc6d544b4b6d16efcd58318a">
+        <source>Refresh channels</source>
+        <target>Odśwież kanały</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ebf4d18ef36596173381a70d9330352">
+        <source>Drag and drop payment methods to change their order.</source>
+        <target>Przeciągnij i upuść metody płatności, aby zmienić ich kolejność.</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

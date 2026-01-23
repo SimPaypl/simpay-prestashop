@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use PrestaShopBundle\Entity\Repository\TabRepository;
 use PrestaShopBundle\Service\Routing\Router;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 
@@ -19,31 +18,17 @@ final class Simpay extends PaymentModule
 {
     public const CONFIG_OS_AWAITING = 'PS_OS_SIMPAY_AWAITING';
 
-    private const MODULE_ADMIN_CONTROLLERS = [
-        [
-            'class_name' => 'SimpayConfigurationAdminParentController',
-            'name' => 'SimPay Module',
-            'parent_class_name' => 'AdminParentModulesSf',
-            'visible' => false,
-        ],
-        [
-            'class_name' => 'SimpayConfigurationAdminController',
-            'route_name' => 'simpay_configuration',
-            'name' => 'Configuration',
-            'parent_class_name' => 'SimpayConfigurationAdminParentController',
-            'visible' => false,
-        ],
-    ];
-
     private const HOOKS = [
         'paymentOptions',
+        'displayBackOfficeHeader',
+        'displayHeader'
     ];
 
     public function __construct()
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.2';
+        $this->version = '1.1.0';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -54,9 +39,9 @@ final class Simpay extends PaymentModule
         $this->bootstrap = true;
         parent::__construct();
 
-        $this->displayName = $this->trans('Płatności SimPay', [], 'Modules.Simpay.Admin');
-        $this->description = $this->trans('Połącz swój sklep z płatnościami SimPay', [], 'Modules.Simpay.Admin');
-        $this->confirmUninstall = $this->trans('Czy na pewno chcesz odinstalować wtyczkę?', [], 'Modules.Simpay.Admin');
+        $this->displayName = $this->trans('SimPay Payments', [], 'Modules.Simpay.Admin');
+        $this->description = $this->trans('Accept fast and secure online payments with SimPay – BLIK, online transfers and instant payments. Easy integration and smooth checkout for your customers.', [], 'Modules.Simpay.Admin');
+        $this->confirmUninstall = $this->trans('Are you sure you want to uninstall? You will lose all your settings!', [], 'Modules.Simpay.Admin');
     }
 
     public function install(): bool
@@ -89,10 +74,6 @@ final class Simpay extends PaymentModule
             return false;
         }
 
-        if (!$this->installTabs()) {
-            return false;
-        }
-
         return true;
     }
 
@@ -106,11 +87,47 @@ final class Simpay extends PaymentModule
             return false;
         }
 
-        if (!$this->uninstallTabs()) {
-            return false;
+        return true;
+    }
+
+    /**
+     * Indicates that this module uses the new PrestaShop translation system.
+     */
+    public function isUsingNewTranslationSystem(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Module header register scripts and styles.
+     *
+     * @return void
+     */
+    public function hookDisplayHeader(): void
+    {
+        if (
+            !isset($this->context->controller) ||
+            !in_array($this->context->controller->php_self, ['order', 'order-opc'], true)
+        ) {
+            return;
         }
 
-        return true;
+        $this->context->controller->addCSS($this->_path . 'views/css/front/simpay.css');
+        $this->context->controller->addJS($this->_path . 'views/js/front/front.js');
+    }
+
+    public function hookDisplayBackOfficeHeader()
+    {
+        if (Tools::getValue('controller') !== 'SimpayConfigurationAdminController') {
+            return;
+        }
+
+        Media::addJsDef([
+            'simpayChannelsUrl' => $this->get('router')->generate('simpay_admin_channels'),
+        ]);
+
+        $this->context->controller->addJS($this->_path . 'views/js/admin/payment-methods.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
     }
 
     /**
@@ -119,6 +136,10 @@ final class Simpay extends PaymentModule
      */
     public function hookPaymentOptions(array $params): array
     {
+        if (!$this->isConfigurationComplete()) {
+            return [];
+        }
+
         $cart = $params['cart'];
 
         if (false === Validate::isLoadedObject($cart)) {
@@ -139,6 +160,7 @@ final class Simpay extends PaymentModule
 
         $methods = [];
 
+        $showPaymentMethods = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYMENT_METHODS_IN_MAIN);
         $hasBlik = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_SEPARATELY);
         $hasBlikBnpl = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_BNPL_SEPARATELY);
         $hasPayPo = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYPO_SEPARATELY);
@@ -146,7 +168,7 @@ final class Simpay extends PaymentModule
         if($hasBlik) {
             $methods[] = (new PaymentOption())
                 ->setModuleName($this->name)
-                ->setCallToActionText('Płatność BLIK')
+                ->setCallToActionText($this->trans('Pay with BLIK', [], 'Modules.Simpay.Shop'))
                 ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'blik'], true))
                 ->setInputs([
                     'token' => [
@@ -161,7 +183,7 @@ final class Simpay extends PaymentModule
         if($hasBlikBnpl) {
             $methods[] = (new PaymentOption())
                 ->setModuleName($this->name)
-                ->setCallToActionText('Blik Płacę Później')
+                ->setCallToActionText($this->trans('BLIK Pay Later', [], 'Modules.Simpay.Shop'))
                 ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'blik-paylater'], true))
                 ->setInputs([
                     'token' => [
@@ -170,13 +192,13 @@ final class Simpay extends PaymentModule
                         'value' => Tools::getToken('simpay'),
                     ],
                 ])
-                ->setAdditionalInformation('Dowiedz się więcej na <a href="https://www.blik.com/place-pozniej" target="_blank">https://www.blik.com/place-pozniej</a>')
+                ->setAdditionalInformation($this->trans('Learn more at <a href=":url" target="_blank">:url</a>', ['url' => 'https://www.blik.com/place-pozniej'], 'Modules.Simpay.Shop'))
                 ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/blik_paylater.png');
         }
         if($hasPayPo) {
             $methods[] = (new PaymentOption())
                 ->setModuleName($this->name)
-                ->setCallToActionText('PayPo: Kup teraz, zapłać później')
+                ->setCallToActionText($this->trans('PayPo – Buy now, pay later', [], 'Modules.Simpay.Shop'))
                 ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'paypo'], true))
                 ->setInputs([
                     'token' => [
@@ -185,91 +207,93 @@ final class Simpay extends PaymentModule
                         'value' => Tools::getToken('simpay'),
                     ],
                 ])
-                ->setAdditionalInformation('Dowiedz się więcej na <a href="https://start.paypo.pl/" target="_blank">https://start.paypo.pl</a>')
+                ->setAdditionalInformation($this->trans('Learn more at <a href=":url" target="_blank">paypo.pl</a>', ['url' => 'https://start.paypo.pl/'], 'Modules.Simpay.Shop'))
                 ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/paypo.png');
         }
 
+        $this->context->smarty->assign([
+            'simpay_methods' => $this->getCheckoutMethodsGridToDisplay(),
+            'simpay_module_name' => $this->name,
+            'simpay_action' => $this->context->link->getModuleLink($this->name, 'validate', [], true),
+            'simpay_token' => Tools::getToken('simpay'),
+            'simpay_show_methods' => $showPaymentMethods
+        ]);
+
+        $gridHtml = $this->fetch('module:' . $this->name . '/views/templates/hook/payment_grid.tpl');
+
         $methods[] = (new PaymentOption())
             ->setModuleName($this->name)
-            ->setCallToActionText('Płatność online SimPay')
+            ->setCallToActionText($this->trans('SimPay online payment', [], 'Modules.Simpay.Shop'))
             ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', [], true))
-            ->setInputs([
-                'token' => [
-                    'name' => 'token',
-                    'type' => 'hidden',
-                    'value' => Tools::getToken('simpay'),
-                ],
-            ])
+            ->setForm($gridHtml)
             ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/simpay.png');
 
         return $methods;
     }
+
+    private function isConfigurationComplete(): bool
+    {
+        return
+            (bool) Configuration::get(SimpayDataConfiguration::API_PASSWORD)
+            && (bool) Configuration::get(SimpayDataConfiguration::SERVICE_ID)
+            && (bool) Configuration::get(SimpayDataConfiguration::SERVICE_IPN_SIGNATURE_KEY);
+    }
+
+
+    /**
+     * Build a safe list of methods to display in checkout
+     * @return array<int, array{id:string,name:string,type:string,img:?string}>
+     */
+    private function getCheckoutMethodsGridToDisplay(): array
+    {
+        // Selected in admin
+        $raw = (string) Configuration::get('SIMPAY_PAYMENT_METHODS_LIST_IN_MAIN');
+        $selected = $raw !== '' ? json_decode($raw, true) : [];
+        if (!is_array($selected)) {
+            $selected = [];
+        }
+
+        $selectedIds = array_keys($selected);
+
+        // Available from cache
+        /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $cache */
+        $cache = $this->get('prestashop.module.simpay.channel_cache');
+        $available = $cache->get();
+
+        if (empty($available)) {
+            return [];
+        }
+
+        $availableById = [];
+        foreach ($available as $ch) {
+            if (!isset($ch['id'])) {
+                continue;
+            }
+            $availableById[(string) $ch['id']] = $ch;
+        }
+
+        // keep admin order
+        $methods = [];
+        foreach ($selectedIds as $id) {
+            if (isset($availableById[$id])) {
+                $methods[] = $availableById[$id];
+            }
+        }
+
+        // if admin selected nothing or all missing, show some defaults
+        if (empty($methods)) {
+            $methods = array_slice($available, 0, 12);
+        }
+
+        return $methods;
+    }
+
 
     public function getContent(): void
     {
         /** @var Router $router */
         $route = $this->get('router')->generate('simpay_configuration');
         ToolsCore::redirectAdmin($route);
-    }
-
-    private function installTabs(): bool
-    {
-        $tabRepository = $this->get('prestashop.core.admin.tab.repository');
-        /** @var TabRepository $tabRepository */
-
-        foreach (self::MODULE_ADMIN_CONTROLLERS as $controller) {
-            if ($tabRepository->findOneIdByClassName($controller['class_name'])) {
-                continue;
-            }
-
-            $tab = new Tab();
-            $tab->class_name = $controller['class_name'];
-            $tab->active = $controller['visible'];
-
-            /** @var array<string,array{
-             *     id_lang: int,
-             *     name: string,
-             *     active: int,
-             *     iso_code: string,
-             *     language_code: string,
-             *     locale: string,
-             *     date_format_lite: string,
-             *     date_format_full: string,
-             *     is_rtl: int,
-             *     id_shop: int,
-             *     id_shop_list: array<bool>,
-             * }> $languages
-             */
-            $languages = Language::getLanguages(false);
-            foreach ($languages as $lang) {
-                $tab->name[$lang['id_lang']] = $this->trans($controller['name'], [], 'Modules.Simpay.Admin', $lang['locale']);
-            }
-            $tab->id_parent = $tabRepository->findOneIdByClassName($controller['parent_class_name']);
-            $tab->module = 'simpay';
-            if (!$tab->add()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function uninstallTabs(): bool
-    {
-        $tabRepository = $this->get('prestashop.core.admin.tab.repository');
-        /** @var TabRepository $tabRepository */
-
-        foreach (self::MODULE_ADMIN_CONTROLLERS as $controller) {
-            $id_tab = (int)$tabRepository->findOneIdByClassName($controller['class_name']);
-            $tab = new Tab($id_tab);
-            if (Validate::isLoadedObject($tab)) {
-                if (!$tab->delete()) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /** @param array<string, string> $nameByLangIsoCode */

@@ -1,0 +1,8 @@
+.list-group {
+    list-style-type: none;
+    min-height: 120px;
+    height: calc(100% - 30px);
+}
+.list-group-item {
+    cursor: pointer;
+}

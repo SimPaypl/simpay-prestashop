@@ -10,3 +10,8 @@ services:
   prestashop.module.simpay.front.payment_client:
     class: 'Simpay\PaymentInterface'
     factory: '@prestashop.module.simpay.front.payment_client_factory'
+
+  prestashop.module.simpay.channel_cache:
+    class: 'SimPaypl\PrestaShop\Helper\SimPayChannelCache'
+    arguments:
+      - '@prestashop.module.simpay.front.payment_client'

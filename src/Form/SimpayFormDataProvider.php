@@ -19,6 +19,8 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      * api_password: string,
      * service_id: string,
      * service_ipn_signature_key: string,
+     * show_payment_methods_in_main: boolean,
+     * payment_methods_list_in_main: string,
      * show_blik_separately: boolean,
      * show_blik_bnpl_separately: boolean,
      * show_paypo_separately: boolean
@@ -35,6 +37,8 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      *      api_password: string,
      *      service_id: string,
      *      service_ipn_signature_key: string,
+     *      show_payment_methods_in_main: boolean,
+     *      payment_methods_list_in_main: string,
      *      show_blik_separately: boolean,
      *      show_blik_bnpl_separately: boolean,
      *      show_paypo_separately: boolean

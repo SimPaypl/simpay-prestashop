@@ -2,9 +2,24 @@ services:
   _defaults:
     public: true
 
+  prestashop.module.simpay.front.payment_client_factory:
+    class: 'SimPaypl\PrestaShop\PaymentClientFactory'
+    arguments:
+      - '@prestashop.adapter.legacy.configuration'
+
+  prestashop.module.simpay.front.payment_client:
+    class: 'SimPaypl\PrestaShop\SimPayApiService'
+    factory: '@prestashop.module.simpay.front.payment_client_factory'
+
+  prestashop.module.simpay.channel_cache:
+    class: 'SimPaypl\PrestaShop\Helper\SimPayChannelCache'
+    arguments:
+      - '@prestashop.module.simpay.front.payment_client'
+
   SimPaypl\PrestaShop\Controller\SimpayConfigurationAdminController:
     arguments:
       - '@prestashop.module.simpay.admin.form.simpay_form_data_handler'
+      - '@prestashop.module.simpay.channel_cache'
     tags:
       - { name: 'controller.service_arguments' }
 

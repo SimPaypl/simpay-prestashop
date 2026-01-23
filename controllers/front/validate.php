@@ -47,11 +47,24 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         /** @var SimPayApiService $paymentClient */
         $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
 
+        $method = Tools::getValue('method');
+
+        if (!$method && Tools::getValue('simpay_method_choice')) {
+            $method = Tools::getValue('simpay_method_choice');
+        }
+
+        /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $channelCache */
+        $channelCache = $this->get('prestashop.module.simpay.channel_cache');
+
+        $channels = $channelCache->get();
+        $allowedChannelIds = array_column($channels, 'id');
+
+        if ($method && !in_array($method, $allowedChannelIds, true)) {
+            $method = null;
+        }
+
         /** @var string $serviceIdString */
-        $response = $paymentClient->createPayment(
-            Configuration::get(SimpayDataConfiguration::SERVICE_ID),
-            ['json' => $this->createPaymentRequest($cart, $customer->secure_key, Tools::getValue('method'))],
-        );
+        $response = $paymentClient->createPayment(['json' => $this->createPaymentRequest($cart, $customer->secure_key, $method)]);
 
         if ($response->getStatusCode() !== 201) {
             PrestaShopLogger::addLog(
@@ -63,7 +76,11 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
                 true,
             );
 
-            $this->errors[] = 'Nie udało się zainicjować płatności. Spróbuj ponownie lub skontaktuj się ze sklepem';
+            $this->errors[] = $this->trans(
+                'We could not initialize the payment. Please try again or contact the shop.',
+                [],
+                'Modules.Simpay.Shop'
+            );
 
             Tools::redirect($this->context->link->getPageLink(
                 'order',
@@ -183,14 +200,10 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             $this->context->language?->id,
         );
 
-        if ($channel && !in_array($channel, ['blik', 'blik-paylater', 'paypo'])) {
-            $channel = null;
-        }
-
         $payload = [
             'amount' => $amount,
             'currency' => 'PLN',
-            'description' => 'Zamówienie ' . (string)$cart->id,
+            'description' => $this->trans('Order',[] , 'Modules.Simpay.Shop') . ' ' . (string)$cart->id,
             'control' => (string)$cart->id,
             'customer' => array_filter([
                 'name' => mb_substr($this->context->customer->firstname . ' ' . $this->context->customer->lastname, 0, 64),

@@ -2,26 +2,19 @@
 
 {block name="content"}
     <section class="card card-block mb-2">
-        <b class="mb-1">{l s='Trwa przekierowanie... Proszę czekać' mod='simpay'}</b>
-        <p>{l s='Jeśli nie zostali Państwo przekierowani, prosimy o' mod='simpay'}</p>
+        <b class="mb-1">{l s='Redirecting… please wait' d='Modules.Simpay.Shop'}</b>
+        <p>{l s='If you are not redirected automatically, please' d='Modules.Simpay.Shop'}</p>
+
         <form action="{$action}" method="get" class="mb-1" id="simpayRedirectForm">
             <button type="submit" class="btn btn-primary">
-                {l s='naciśnięcie tutaj' mod='simpay'}
+                {l s='click here' d='Modules.Simpay.Shop'}
             </button>
         </form>
     </section>
+
     <script>
-        window.onload = () => {
+        window.addEventListener('load', function () {
             document.getElementById('simpayRedirectForm').submit();
-        };
+        });
     </script>
 {/block}
-
-{*{block name='javascript_bottom'}*}
-{*    {include file="_partials/javascript.tpl" javascript=$javascript.bottom}*}
-{*    <script type="text/javascript">*}
-{*        setTimeout(function(){*}
-{*            window.location.replace("{$action}");*}
-{*        }, 5000);*}
-{*    </script>*}
-{*{/block}*}
