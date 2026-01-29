@@ -1,41 +1,51 @@
 {extends "$layout"}
 
 {block name="meta_title"}
-    {l s='SimPay – payment issue' d='Modules.Simpay.Shop'}
+  {l s='SimPay – payment issue' d='Modules.Simpay.Shop'}
 {/block}
 
 {block name="meta_description"}
-    {l s='There was an issue with your payment. You will receive a link to retry shortly.' d='Modules.Simpay.Shop'}
-{/block}
-
-{block name="meta_keywords"}
-    {l s='payment, issue, retry' d='Modules.Simpay.Shop'}
+  {l s='We could not finalize your payment. Please retry the payment from your email.' d='Modules.Simpay.Shop'}
 {/block}
 
 {block name="content"}
-    <section id="main">
-        <header class="page-header">
-            <h1>{l s='Payment issue' d='Modules.Simpay.Shop'}</h1>
-        </header>
+  <section class="simpay-wrapper">
+    <p class="alert alert-warning">
+      {l s='We could not process your payment and the order is still waiting for a successful transaction.' d='Modules.Simpay.Shop'}
+    </p>
 
-        <section id="content" class="page-content">
-            <p class="alert alert-warning">
-                {l s='There was an issue while processing your payment. You will receive a link to retry the payment shortly.' d='Modules.Simpay.Shop'}
-            </p>
+    <h1 class="simpay-title">
+      {l s='Payment issue' d='Modules.Simpay.Shop'}
+    </h1>
 
-            <p class="text-muted">
-                {l s='If you do not receive the link within a few minutes, you can try to create order again.' d='Modules.Simpay.Shop'}
-            </p>
+    <div class="simpay-box">
+      <h2 class="simpay-subtitle">
+        {l s='What should you do now?' d='Modules.Simpay.Shop'}
+      </h2>
 
-            <p>
-                <a class="btn btn-primary" href="{$urls.pages.index}">
-                    {l s='Back to shop' d='Modules.Simpay.Shop'}
-                </a>
-            </p>
-        </section>
-    </section>
+      <p class="simpay-text">
+        {l s='Open the order confirmation email and click the “Retry payment” link to try again.' d='Modules.Simpay.Shop'}
+      </p>
+
+      <ul class="simpay-list">
+        <li>{l s='Check your spam folder if you did not receive the email.' d='Modules.Simpay.Shop'}</li>
+        <li>{l s='You can resend the confirmation from your order history.' d='Modules.Simpay.Shop'}</li>
+      </ul>
+
+      <p class="simpay-muted">
+        {l s='Once the payment succeeds, the order status will update automatically.' d='Modules.Simpay.Shop'}
+      </p>
+
+      <div class="simpay-actions">
+        <a class="btn btn-primary" href="{$urls.pages.index}">
+          {l s='Back to shop' d='Modules.Simpay.Shop'}
+        </a>
+
+      </div>
+    </div>
+  </section>
 {/block}
 
 {block name="link_rewrite"}
-    simpay-payment-issue
+  simpay-payment-issue
 {/block}

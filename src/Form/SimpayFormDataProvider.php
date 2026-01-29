@@ -23,7 +23,8 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      * payment_methods_list_in_main: string,
      * show_blik_separately: boolean,
      * show_blik_bnpl_separately: boolean,
-     * show_paypo_separately: boolean
+     * show_paypo_separately: boolean,
+     * repayment_enabled: boolean
      * }
      */
     public function getData(): array
@@ -41,7 +42,8 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      *      payment_methods_list_in_main: string,
      *      show_blik_separately: boolean,
      *      show_blik_bnpl_separately: boolean,
-     *      show_paypo_separately: boolean
+     *      show_paypo_separately: boolean,
+     *      repayment_enabled: boolean
      *   } $data
      * @return array<string>
      */

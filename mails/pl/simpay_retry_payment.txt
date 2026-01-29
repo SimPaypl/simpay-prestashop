@@ -1,0 +1,13 @@
+{shop_url}
+
+Witaj {firstname} {lastname},
+
+Twoja płatność SimPay za zamówienie {order_name} w sklepie {shop_name} wygasła zanim została sfinalizowana.
+
+Kliknij poniższy link, aby ponowić płatność:
+{retry_url}
+
+Jeżeli link nie działa, skopiuj go do przeglądarki. Po udanej płatności natychmiast wznowimy realizację zamówienia.
+
+Dziękujemy za zakupy!
+Zespół {shop_name}

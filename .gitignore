@@ -6,3 +6,4 @@ composer.lock
 .php-cs-fixer.cache
 .idea
 No newline at end of file
+/src/.DS_Store

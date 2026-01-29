@@ -42,6 +42,6 @@
         {/if}
     </form>
     <div class="simpay-error" style="display:none">
-        <span class="simpay-error__text">Proszę wybrać metodę płatności</span>
+        <span class="simpay-error__text">{l s='Please select a payment method' d='Modules.Simpay.Shop'}</span>
     </div>
 </div>

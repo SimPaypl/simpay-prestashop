@@ -1,0 +1,13 @@
+{shop_url}
+
+Hi {firstname} {lastname},
+
+Your SimPay payment for order {order_name} at {shop_name} expired before it was completed.
+
+Click the link below to retry the payment:
+{retry_url}
+
+If it doesn’t work, copy the link into your browser. Once the payment succeeds, we will resume processing your order right away.
+
+Thank you for shopping with us!
+The {shop_name} team

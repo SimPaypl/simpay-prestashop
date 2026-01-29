@@ -97,6 +97,16 @@
         <target>Wyświetl PayPo jako dodatkową metodę płatności</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="c9d25234079fab9c6d738085061140ed">
+        <source>Re-payment enabled</source>
+        <target>Ponowienie płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f7ae98bdc36ea2686daed151216abf6">
+        <source>Retry payment</source>
+        <target>Ponów płatność</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="60f4b3723660e9d78a1a6cc274dcfb94">
         <source>Configuring the SimPay connection to the store</source>
         <target>Konfiguracja połączenia SimPay ze sklepem</target>

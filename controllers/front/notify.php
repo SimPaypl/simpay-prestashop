@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-use Simpay\Model\Request\Amount;
-use Simpay\Model\Request\CallbackReturnUrl;
-use Simpay\Model\Request\CreatePayment;
-use Simpay\Model\Request\Currency;
-use Simpay\Model\Request\ServiceId;
-use Simpay\PaymentInterface;
+use Context;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShopLogger;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
+use SimPaypl\PrestaShop\Helper\SimPayLogger;
 use SimPaypl\PrestaShop\Helper\SimPaySignatureValidator;
 
 final class SimpayNotifyModuleFrontController extends ModuleFrontController
@@ -19,144 +17,176 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
     public function init(): void
     {
         parent::init();
-        // validate module is enabled and configured correctly
     }
 
     public function postProcess(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            die('Method not allowed');
-        }
-
-        if ((bool)Configuration::get(SimpayDataConfiguration::IPN_CHECK_IP)) {
-            /** @var \SimPaypl\PrestaShop\SimPayApiService $paymentClient */
-            $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
-
-            $ips = $paymentClient->getIps();
-            if (!in_array(Tools::getRemoteAddr(), $ips)) {
-                PrestaShopLogger::addLog(
-                    'SimPayPayment: Unauthorized IP address in IPN: ' . Tools::getRemoteAddr(),
-                    3,
-                    0,
-                    'IPN',
-                    null,
-                    true,
-                );
-                http_response_code(403);
-                die('Invalid IP');
-            }
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            SimPayLogger::respond(405, 'Method not allowed', 'NOT_POST');
         }
 
         $raw = Tools::file_get_contents('php://input');
-        if (!is_string($raw)) {
-            http_response_code(400);
-            die('Invalid payload');
+
+        if (!is_string($raw) || $raw === '') {
+            SimPayLogger::respond(400, 'Invalid payload', 'EMPTY_RAW');
         }
-        $userAgent = explode('/', $_SERVER['HTTP_USER_AGENT'], 2);
-        if (empty($userAgent[1]) || $userAgent[1] !== '2.0') {
-            PrestaShopLogger::addLog(
-                'SimPayPayment: Got unsupported version of IPN (' . $userAgent[1] ?? 'N/A' . ')',
-                3,
-                0,
-                'IPN',
-                null,
-                true,
-            );
-            http_response_code(400);
-            die('IPN version is not supported');
+
+        // IP allowlist check (only log result)
+        if ((bool) Configuration::get(SimpayDataConfiguration::IPN_CHECK_IP)) {
+            /** @var \SimPaypl\PrestaShop\SimPayApiService $paymentClient */
+            $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
+
+            $ips = (array) $paymentClient->getIps();
+            $ok = in_array(Tools::getRemoteAddr(), $ips, true);
+            
+            if (!$ok) {
+                SimPayLogger::respond(403, 'Invalid IP', 'BAD_IP');
+            }
+        }
+
+        // Version check from UA: "SimPay-IPN/2.0"
+        $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+        $parts = explode('/', $ua, 2);
+        $version = $parts[1] ?? 'N/A';
+
+        if ($version !== '2.0') {
+            SimPayLogger::respond(400, 'IPN version is not supported', 'BAD_VERSION', ['v' => $version]);
         }
 
         $payload = json_decode($raw, true);
+        $okJson = is_array($payload);
+
+        if (!$okJson) {
+            SimPayLogger::respond(400, 'Invalid JSON', 'BAD_JSON');
+        }
 
         if (!$this->validateRequest($payload)) {
-            http_response_code(422);
-            die('Validation failed');
+            SimPayLogger::respond(422, 'Validation failed', 'BAD_FIELDS', [
+                'missing' => implode(',', $this->missingFields($payload)),
+            ]);
         }
 
-        if (!(new SimPaySignatureValidator())->isValid($payload, Configuration::get(SimpayDataConfiguration::SERVICE_IPN_SIGNATURE_KEY))) {
-            http_response_code(409);
-            die('Invalid signature');
+        $sigKey = (string) Configuration::get(SimpayDataConfiguration::SERVICE_IPN_SIGNATURE_KEY);
+        $signatureOk = (new SimPaySignatureValidator())->isValid($payload, $sigKey);
+
+        if (!$signatureOk) {
+            SimPayLogger::respond(409, 'Invalid signature', 'BAD_SIGNATURE');
         }
 
-        if ($payload['type'] === 'transaction:status_changed') {
-            $this->handleTransactionStatusChangedEvent($payload['data']);
+        $type = (string) ($payload['type'] ?? '');
+
+        $status = (string) ($payload['status'] ?? '');
+        $repaymentEnabled = (bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED);
+        $newState = null;
+
+        if ($type === 'transaction:status_changed') {
+
+            $data = (array) ($payload['data'] ?? []);
+            $this->handleTransactionStatusChangedEvent($data);
         }
 
-        die('OK');
+        SimPayLogger::respond(200, 'OK', 'DONE');
     }
 
-    private function handleTransactionStatusChangedEvent(array $payload)
+    private function handleTransactionStatusChangedEvent(array $payload): void
     {
-        $order = Order::getByCartId((int)$payload['control']);
-        if (!$order) {
-            PrestaShopLogger::addLog(
-                'SimPayPayment: Order not found: ' . $payload['control'],
-                3,
-                0,
-                'IPN',
-                null,
-                true,
-            );
+        $cartId = (int) ($payload['control'] ?? 0);
+        if ($cartId <= 0) {
+            SimPayLogger::error('ERROR invalid control', ['control' => $payload['control'] ?? null]);
+            http_response_code(400);
+            die('Invalid control');
+        }
+
+        $order = Order::getByCartId($cartId);
+        if (!$order || !Validate::isLoadedObject($order)) {
+            SimPayLogger::error('ERROR order not found', ['cart' => $cartId]);
             http_response_code(400);
             die('Order not found');
         }
 
-        if ($this->isLessThan((float)$payload['amount']['original_value'], $order->getTotalPaid())) {
-            PrestaShopLogger::addLog(
-                'SimPayPayment: Invalid amount for order: ' . $payload['control'] . ' - ' . $payload['amount']['original_value'] . ' < ' . $order->getTotalPaid(),
-                3,
-                0,
-                'IPN',
-                null,
-                true,
-            );
+        $incoming = (float) ($payload['amount']['original_value'] ?? 0);
+        $expected = (float) $order->getTotalPaid();
+
+        if ($incoming > 0 && $this->isLessThan($incoming, $expected)) {
+            SimPayLogger::error('ERROR amount too low');
             http_response_code(402);
             die('Invalid amount');
         }
 
-        if ((int)Configuration::get(Simpay::CONFIG_OS_AWAITING) !== $order->getCurrentState()) {
+        if (!$this->module->isUpdatableState((int) $order->current_state)) {
+            SimPayLogger::info('SKIP order already processed');
             die('OK');
         }
 
-        $changeOrderStatus = false;
-        $newOrderStatus = null;
-        if ($payload['status'] === 'transaction_paid') {
-            $changeOrderStatus = true;
-            $newOrderStatus = Configuration::get('PS_OS_PAYMENT');
-        } else if ($payload['status'] === 'transaction_canceled') {
-            $changeOrderStatus = true;
-            $newOrderStatus = Configuration::get('PS_OS_CANCELED');
-        } else if (in_array($payload['status'], ['transaction_failure', 'transaction_expired', 'transaction_fraud'])) {
-            $changeOrderStatus = true;
-            $newOrderStatus = Configuration::get('PS_OS_ERROR');
+        $repaymentEnabled = (bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED);
+        $status = (string) ($payload['status'] ?? '');
+        $newState = null;
+
+        switch ($status) {
+            case 'transaction_paid':
+                $newState = (int) Configuration::get('PS_OS_PAYMENT');
+                break;
+
+            case 'transaction_canceled':
+                $newState = (int) Configuration::get('PS_OS_CANCELED');
+                break;
+
+            case 'transaction_failure':
+            case 'transaction_fraud':
+                $newState = (int) Configuration::get('PS_OS_ERROR');
+                break;
+
+            case 'transaction_expired':
+                $newState = (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED);
+                break;
+            default:
+                SimPayLogger::warning('SKIP unknown status', ['status' => $status]);
+                die('OK');
         }
 
-        if ($changeOrderStatus) {
-            $orderHistory = new OrderHistory();
-            $orderHistory->id_order = (int)$order->id;
-            $orderHistory->changeIdOrderState($newOrderStatus, (int)$order->id, true);
-            $orderHistory->save();
+        try {
+            $history = new OrderHistory();
+            $history->id_order = (int) $order->id;
+            $history->changeIdOrderState($newState, (int) $order->id, true);
+
+            $orderState = new OrderState($newState);
+            $sendEmail = Validate::isLoadedObject($orderState) ? (bool) $orderState->send_email : false;
+            $history->addWithemail($sendEmail, [], Context::getContext());
+
+            SimPayLogger::info('SUCCESS state changed', [
+                'order' => (int) $order->id,
+                'new_state' => $newState,
+            ]);
+        } catch (\Throwable $e) {
+            SimPayLogger::error('ERROR exception', ['msg' => $e->getMessage()]);
+            http_response_code(500);
+            die('Order update failed');
         }
 
         die('OK');
     }
 
-    private function validateRequest(array|null $payload): bool
+    private function missingFields(array $payload): array
+    {
+        $required = ['type', 'notification_id', 'date', 'data', 'signature'];
+        $missing = [];
+
+        foreach ($required as $f) {
+            if (!array_key_exists($f, $payload) || $payload[$f] === null || $payload[$f] === '') {
+                $missing[] = $f;
+            }
+        }
+
+        return $missing;
+    }
+
+    private function validateRequest(?array $payload): bool
     {
         if (empty($payload)) {
             return false;
         }
 
-        $requiredFields = [
-            'type',
-            'notification_id',
-            'date',
-            'data',
-            'signature',
-        ];
-
-        foreach ($requiredFields as $field) {
+        foreach (['type', 'notification_id', 'date', 'data', 'signature'] as $field) {
             if (empty($payload[$field])) {
                 return false;
             }
@@ -165,14 +195,14 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         return true;
     }
 
-    // $a < $b => true
-    // $a >= $b => false
     private function isLessThan(float $a, float $b, int $precision = 2): bool
     {
-        if (bccomp((string)$a, (string)$b, $precision) == 0) {
-            return false;
-        }
+        $factor = 10 ** $precision;
 
-        return bccomp((string)$a, (string)$b, $precision) < 0;
+        $ai = (int) round($a * $factor);
+        $bi = (int) round($b * $factor);
+
+        return $ai < $bi;
     }
 }
+

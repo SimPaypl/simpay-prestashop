@@ -1,12 +1,18 @@
+.payment-option img[src*=simpay] {
+    margin-left: .5rem;
+    max-width: 90px;
+}
+
 body#checkout .additional-information:has(.simpay-wrapper) {
     margin-left: unset;
 }
 
 .simpay-payment-channels {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     margin-left: -0.5rem;
     margin-right: -0.5rem;
+    margin-top: 1rem;
 }
 
 .simpay-payment-channels__item {
@@ -59,4 +65,84 @@ body#checkout .additional-information:has(.simpay-wrapper) {
     -webkit-transition: box-shadow 150ms ease-out;
     -moz-transition: box-shadow 150ms ease-out;
     -o-transition: box-shadow 150ms ease-out;
+}
+
+.simpay-repayment{
+    display:flex;
+    align-items:stretch;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.simpay-repayment__content{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    max-width: 50%;
+}
+
+.simpay-repayment__title{ margin-bottom:12px; }
+.simpay-repayment__logo{
+    display:flex;
+    align-items:center;
+}
+
+.simpay-repayment__button {
+    width: fit-content;
+}
+
+@media (max-width: 767px) {
+    .simpay-repayment__content {
+        max-width: unset;
+    }
+    .simpay-repayment {
+        flex-direction: column;
+    }
+}
+
+.simpay-wrapper {
+    margin: 1.5rem auto;
+}
+
+.simpay-box {
+    padding: 1rem 0;
+}
+
+.simpay-box .alert {
+    margin-bottom: 18px;
+    border-radius: 8px;
+}
+
+.simpay-subtitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 6px 0 10px;
+}
+
+.simpay-text {
+    margin: 0 0 14px;
+    color: #333;
+}
+
+.simpay-list {
+    margin: 0 0 14px;
+    padding-left: 18px;
+    list-style: disc;
+}
+
+.simpay-list li {
+    margin: 0 0 8px;
+    color: #444;
+}
+
+.simpay-muted {
+    margin: 0 0 18px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.simpay-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

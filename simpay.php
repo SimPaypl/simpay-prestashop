@@ -5,6 +5,7 @@ declare(strict_types=1);
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Service\Routing\Router;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
+use Simpaypl\Prestashop\Service\SimPayRetryPaymentService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -17,11 +18,14 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 final class Simpay extends PaymentModule
 {
     public const CONFIG_OS_AWAITING = 'PS_OS_SIMPAY_AWAITING';
+    public const CONFIG_OS_EXPIRED = 'PS_OS_SIMPAY_EXPIRED';
 
     private const HOOKS = [
         'paymentOptions',
         'displayBackOfficeHeader',
-        'displayHeader'
+        'displayHeader',
+        'displayOrderDetail',
+        'actionGetExtraMailTemplateVars'
     ];
 
     public function __construct()
@@ -34,7 +38,7 @@ final class Simpay extends PaymentModule
             'min' => '8.0.0',
             'max' => _PS_VERSION_,
         ];
-        $this->controllers = ['failed', 'notify', 'validate'];
+        $this->controllers = ['failed', 'notify', 'validate', 'retry'];
 
         $this->bootstrap = true;
         parent::__construct();
@@ -60,7 +64,19 @@ final class Simpay extends PaymentModule
                 'en' => 'Awaiting SimPay payment',
                 'pl' => 'Oczekuje na płatność SimPay',
             ],
-            '#34209e',
+            '#03d14e',
+            true,
+        )) {
+            return false;
+        }
+
+        if (!$this->createOrderState(
+            self::CONFIG_OS_EXPIRED,
+            [
+                'en' => 'SimPay payment expired',
+                'pl' => 'Płatność SimPay wygasła',
+            ],
+            '#03d14e',
             true,
             false,
             false,
@@ -68,14 +84,25 @@ final class Simpay extends PaymentModule
             false,
             false,
             false,
-            false,
-            'awaiting_simpay_payment'
+            true,
+            'simpay_retry_payment'
         )) {
+            return false;
+        }
+
+        if (!$this->ensureMailTemplate('simpay_retry_payment')) {
             return false;
         }
 
         return true;
     }
+
+    public function enable($force_all = false): bool
+    {
+        return parent::enable($force_all)
+            && $this->ensureMailTemplate('simpay_retry_payment');
+    }
+
 
     public function uninstall(): bool
     {
@@ -105,15 +132,28 @@ final class Simpay extends PaymentModule
      */
     public function hookDisplayHeader(): void
     {
-        if (
-            !isset($this->context->controller) ||
-            !in_array($this->context->controller->php_self, ['order', 'order-opc'], true)
-        ) {
+        if (!isset($this->context->controller)) {
             return;
         }
 
-        $this->context->controller->addCSS($this->_path . 'views/css/front/simpay.css');
-        $this->context->controller->addJS($this->_path . 'views/js/front/front.js');
+        $c = $this->context->controller;
+
+        $phpSelf = $c->php_self ?? null;
+        if (is_string($phpSelf) && in_array($phpSelf, ['order', 'order-opc', 'order-detail'], true)) {
+            $c->addCSS($this->_path . 'views/css/front/simpay.css');
+            $c->addJS($this->_path . 'views/js/front/front.js');
+            return;
+        }
+
+        $fc = Tools::getValue('fc');
+        $module = Tools::getValue('module');
+        $controller = Tools::getValue('controller');
+
+        if ($fc === 'module' && $module === $this->name && is_string($controller)) {
+            $c->addCSS($this->_path . 'views/css/front/simpay.css');
+            $c->addJS($this->_path . 'views/js/front/front.js');
+            return;
+        }
     }
 
     public function hookDisplayBackOfficeHeader()
@@ -223,10 +263,10 @@ final class Simpay extends PaymentModule
 
         $methods[] = (new PaymentOption())
             ->setModuleName($this->name)
-            ->setCallToActionText($this->trans('SimPay online payment', [], 'Modules.Simpay.Shop'))
+            ->setCallToActionText($this->trans('Pay by transfer with SimPay', [], 'Modules.Simpay.Shop'))
             ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', [], true))
             ->setForm($gridHtml)
-            ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/simpay.png');
+            ->setLogo($this->_path . 'views/img/option/simpay.svg');
 
         return $methods;
     }
@@ -238,7 +278,6 @@ final class Simpay extends PaymentModule
             && (bool) Configuration::get(SimpayDataConfiguration::SERVICE_ID)
             && (bool) Configuration::get(SimpayDataConfiguration::SERVICE_IPN_SIGNATURE_KEY);
     }
-
 
     /**
      * Build a safe list of methods to display in checkout
@@ -287,7 +326,6 @@ final class Simpay extends PaymentModule
 
         return $methods;
     }
-
 
     public function getContent(): void
     {
@@ -403,6 +441,85 @@ final class Simpay extends PaymentModule
         }
 
         return $result;
+    }
+
+    public function ensureMailTemplate(string $template): bool
+    {
+        static $ensured = [];
+
+        if (!isset($ensured[$template])) {
+            $ensured[$template] = $this->installMailTemplates($template);
+        }
+
+        return $ensured[$template];
+    }
+
+    private function installMailTemplates(string $template): bool
+    {
+        $languages = Language::getLanguages(false);
+        $moduleMailDir = _PS_MODULE_DIR_ . $this->name . '/mails/';
+
+        foreach ($languages as $language) {
+            $iso = Tools::strtolower((string) $language['iso_code']);
+            $destDir = _PS_MAIL_DIR_ . $iso . '/';
+            if (!is_dir($destDir) && !@mkdir($destDir, 0775, true) && !is_dir($destDir)) {
+                $this->_errors[] = sprintf('Failed to create mail dir for %s', $iso);
+                return false;
+            }
+
+            foreach (['html', 'txt'] as $ext) {
+                $src = $this->resolveMailTemplatePath($moduleMailDir, $iso, $template, $ext);
+                if ($src === '') {
+                    $this->_errors[] = sprintf('Missing mail template %s.%s for %s', $template, $ext, $iso);
+                    return false;
+                }
+
+                $dest = $destDir . $template . '.' . $ext;
+                if (!Tools::copy($src, $dest)) {
+                    $this->_errors[] = sprintf('Failed to copy mail template to %s', $dest);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private function resolveMailTemplatePath(string $baseDir, string $iso, string $template, string $ext): string
+    {
+        foreach ([$iso, 'en'] as $candidate) {
+            $path = $baseDir . $candidate . '/' . $template . '.' . $ext;
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return '';
+    }
+
+    public function hookDisplayOrderDetail(array $params): string
+    {
+        /** @var SimPayRetryPaymentService $retryService */
+        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        return $retryService->hookDisplayOrderDetail($params, __FILE__);
+    }
+
+    public function hookActionGetExtraMailTemplateVars(array &$params): void
+    {
+        /** @var SimPayRetryPaymentService $retryService */
+        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        $retryService->hookActionGetExtraMailTemplateVars($params);
+    }
+
+    public static function isUpdatableState(int $stateId): bool {
+        $allowedStates = array_map('intval', [
+            Configuration::get(self::CONFIG_OS_AWAITING),
+            Configuration::get(self::CONFIG_OS_EXPIRED),
+            Configuration::get('PS_OS_ERROR'),
+            Configuration::get('PS_OS_CANCELED'),
+        ]);
+
+        return in_array($stateId, $allowedStates, true);
     }
 
     private function checkCurrency(Cart $cart): bool

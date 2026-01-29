@@ -18,6 +18,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const SHOW_BLIK_BNPL_SEPARATELY = 'SIMPAY_SHOW_BLIK_BNPL_SEPARATELY';
     public const SHOW_PAYPO_SEPARATELY = 'SIMPAY_SHOW_PAYPO_SEPARATELY';
     public const IPN_CHECK_IP = 'SIMPAY_IPN_CHECK_IP';
+    public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
 
     private ConfigurationInterface $configuration;
 
@@ -36,6 +37,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     show_blik_bnpl_separately: boolean,
      *     show_paypo_separately: boolean,
      *     ipn_check_ip: boolean,
+     *     repayment_enabled: boolean
      *  }
      */
     public function getConfiguration(): array
@@ -50,6 +52,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'show_blik_bnpl_separately' => (bool)$this->configuration->get(self::SHOW_BLIK_BNPL_SEPARATELY),
             'show_paypo_separately' => (bool)$this->configuration->get(self::SHOW_PAYPO_SEPARATELY),
             'ipn_check_ip' => (bool)$this->configuration->get(self::IPN_CHECK_IP),
+            'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
         ];
     }
 
@@ -64,6 +67,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     show_blik_bnpl_separately: boolean,
      *     show_paypo_separately: boolean,
      *     ipn_check_ip: boolean,
+     *     repayment_enabled: boolean
      * } $configuration
      * @return array<string>
      */
@@ -82,7 +86,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::SHOW_BLIK_BNPL_SEPARATELY, $configuration['show_blik_bnpl_separately']);
         $this->configuration->set(self::SHOW_PAYPO_SEPARATELY, $configuration['show_paypo_separately']);
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
-
+        $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
         return [];
     }
 
@@ -99,6 +103,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             && isset($configuration['show_blik_separately'])
             && isset($configuration['show_blik_bnpl_separately'])
             && isset($configuration['show_paypo_separately'])
-            && isset($configuration['ipn_check_ip']);
+            && isset($configuration['ipn_check_ip'])
+            && isset($configuration['repayment_enabled']);
     }
 }

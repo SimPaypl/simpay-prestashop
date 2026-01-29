@@ -2,34 +2,43 @@
 
 declare(strict_types=1);
 
-use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
 use SimPaypl\PrestaShop\SimPayApiService;
+use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 
 final class SimpayValidateModuleFrontController extends ModuleFrontController
 {
     /** @var Simpay */
     public $module;
 
+    private bool $isRetryFlow = false;
+    private ?Order $retryOrder = null;
+
     public function postProcess()
     {
         $this->assertModuleIsActive();
+        $this->prepareRetryContext();
 
         if (!$this->checkIfContextIsValid()) {
             $this->redirectToOrder();
-
             return;
         }
 
         if (!$this->checkIfPaymentOptionIsAvailable()) {
             $this->redirectToOrder();
-
             return;
         }
 
-        if (Tools::getToken('simpay') !== Tools::getValue('token')) {
-            $this->redirectToOrder();
+        $providedToken = (string) Tools::getValue('token');
+        if (!$this->isRetryFlow) {
+            $expectedToken = Tools::getToken('simpay');
 
-            return;
+            if ($expectedToken !== $providedToken) {
+                PrestaShopLogger::addLog('[SimPay] Invalid payment token', 3);
+                $this->redirectToOrder();
+                return;
+            }
         }
 
         /** @var Cart $cart */
@@ -40,7 +49,6 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         $customer = new Customer($cart->id_customer);
         if (false === Validate::isLoadedObject($customer)) {
             $this->redirectToOrder();
-
             return;
         }
 
@@ -48,14 +56,12 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
 
         $method = Tools::getValue('method');
-
         if (!$method && Tools::getValue('simpay_method_choice')) {
             $method = Tools::getValue('simpay_method_choice');
         }
 
         /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $channelCache */
         $channelCache = $this->get('prestashop.module.simpay.channel_cache');
-
         $channels = $channelCache->get();
         $allowedChannelIds = array_column($channels, 'id');
 
@@ -63,8 +69,13 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             $method = null;
         }
 
+        /** @var \SimPaypl\PrestaShop\Service\PaymentRequestBuilder $builder */
+        $builder = $this->get('prestashop.module.simpay.payment_request_builder');
+        $builderOrderId = $this->retryOrder ? (int) $this->retryOrder->id : (int) $this->module->currentOrder;
+        $payload = $builder->build($cart, $customer->secure_key, $method ?: null, $builderOrderId);
+
         /** @var string $serviceIdString */
-        $response = $paymentClient->createPayment(['json' => $this->createPaymentRequest($cart, $customer->secure_key, $method)]);
+        $response = $paymentClient->createPayment(['json' => $payload]);
 
         if ($response->getStatusCode() !== 201) {
             PrestaShopLogger::addLog(
@@ -93,25 +104,36 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         $json = json_decode($response->getContent(), false);
 
-        $this->module->validateOrder(
-            (int)$cart->id,
-            (int)Configuration::get(Simpay::CONFIG_OS_AWAITING),
-            $cart->getOrderTotal(),
-            $this->trans('SimPay', [], 'Modules.Simpay.Shop'),
-            null,
-            [
-                'transaction_id' => $json->data->transactionId,
-            ],
-            $currency->id,
-            false,
-            $customer->secure_key,
-        );
+        $cartId = (int) $cart->id;
+        $orderStateAwaiting = (int) Configuration::get(Simpay::CONFIG_OS_AWAITING);
+        $orderTotal = $cart->getOrderTotal();
+        $paymentName = $this->trans('SimPay', [], 'Modules.Simpay.Shop');
+        $paymentDetails = [
+            'transaction_id' => $json->data->transactionId,
+        ];
+        $currencyId = $currency->id;
+        $secureKey = $customer->secure_key;
+
+        if (!$this->isRetryFlow) {
+            $this->module->validateOrder(
+                $cartId,
+                $orderStateAwaiting,
+                $orderTotal,
+                $paymentName,
+                null,
+                $paymentDetails,
+                $currencyId,
+                false,
+                $secureKey,
+            );
+        } else {
+            $this->refreshOrderStateAfterRetry();
+        }
 
         $this->setTemplate('module:simpay/views/templates/front/validate.tpl');
         $this->context->smarty?->assign([
             'action' => $json->data->redirectUrl,
         ]);
-        return;
     }
 
     private function assertModuleIsActive(): void
@@ -173,87 +195,98 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         ));
     }
 
-    private function createPaymentRequest(Cart $cart, string $customerSecureKey, string|bool|null $channel = null): array
+    private function prepareRetryContext(): void
     {
-        $amount = (float)$cart->getOrderTotal();
-
-        /** @var Link $link */
-        $link = $this->context->link;
-
-        $successReturnUrl = $link->getPageLink(
-            'order-confirmation',
-            true,
-            $this->context->language?->id,
-            [
-                'id_cart' => (int)$cart->id,
-                'id_module' => (int)$this->module->id,
-                'id_order' => $this->module->currentOrder,
-                'key' => $customerSecureKey
-            ]
-        );
-
-        $failureReturnUrl = $link->getModuleLink(
-            'simpay',
-            'failed',
-            [],
-            true,
-            $this->context->language?->id,
-        );
-
-        $payload = [
-            'amount' => $amount,
-            'currency' => 'PLN',
-            'description' => $this->trans('Order',[] , 'Modules.Simpay.Shop') . ' ' . (string)$cart->id,
-            'control' => (string)$cart->id,
-            'customer' => array_filter([
-                'name' => mb_substr($this->context->customer->firstname . ' ' . $this->context->customer->lastname, 0, 64),
-                'email' => mb_substr($this->context->customer->email, 0, 64),
-                'ip' => Tools::getRemoteAddr(),
-                'countryCode' => 'PL',
-            ]),
-            'antifraud' => [
-                'useragent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-                'systemId' => $this->context->customer->is_guest ? null : (string)$this->context->customer->id,
-            ],
-            'returns' => [
-                'success' => $successReturnUrl,
-                'failure' => $failureReturnUrl,
-            ],
-        ];
-
-        if ($channel) {
-            $payload['directChannel'] = $channel;
+        $retryOrderId = (int) Tools::getValue('retry_order_id');
+        if ($retryOrderId <= 0) {
+            return;
         }
 
-        $billingId = $cart->id_address_invoice;
-        $shippingId = $cart->id_address_delivery;
-        if ($billingId && $address = new Address($billingId)) {
-            $country = new Country($address->id_country);
-            $payload['billing'] = array_filter([
-                'name' => mb_substr($address->firstname, 0, 64),
-                'surname' => mb_substr($address->lastname, 0, 64),
-                'street' => mb_substr($address->address1, 0, 64),
-                'building' => mb_substr($address->address2, 0, 16),
-                'city' => mb_substr($address->city, 0, 64),
-                'postalCode' => mb_substr($address->postcode, 0, 64),
-                'country' => $country->iso_code,
-                'company' => mb_substr($address->company, 0, 64),
-            ]);
-        }
-        if ($shippingId && $address = new Address($billingId)) {
-            $country = new Country($address->id_country);
-            $payload['shipping'] = array_filter([
-                'name' => mb_substr($address->firstname, 0, 64),
-                'surname' => mb_substr($address->lastname, 0, 64),
-                'street' => mb_substr($address->address1, 0, 64),
-                'building' => mb_substr($address->address2, 0, 16),
-                'city' => mb_substr($address->city, 0, 64),
-                'postalCode' => mb_substr($address->postcode, 0, 64),
-                'country' => $country->iso_code,
-                'company' => mb_substr($address->company, 0, 64),
-            ]);
+        if (!(bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED)) {
+            return;
         }
 
-        return $payload;
+        $retryToken = (string) Tools::getValue('retry_token');
+        /** @var SimPayRetryPaymentService $retryService */
+        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+
+        $order = new Order($retryOrderId);
+        if (
+            !Validate::isLoadedObject($order)
+            || $order->module !== $this->module->name
+            || !$retryService->isValidRetryToken($order, $retryToken)
+            || !\Simpay::isUpdatableState((int) $order->current_state)
+        ) {
+            $this->redirectToOrder();
+        }
+
+        $cart = new Cart((int) $order->id_cart);
+        $customer = new Customer((int) $order->id_customer);
+        if (!Validate::isLoadedObject($cart) || !Validate::isLoadedObject($customer)) {
+            $this->redirectToOrder();
+        }
+
+        $formToken = (string) Tools::getValue('retry_form_token');
+        $sessionToken = $this->getStoredRetryFormToken();
+
+        if ($formToken === '' || $sessionToken === '' || !hash_equals($sessionToken, $formToken)) {
+            $this->clearRetryFormToken();
+            $this->redirectToOrder();
+        }
+
+        $this->clearRetryFormToken();
+
+        $this->context->cart = $cart;
+        $this->context->customer = $customer;
+        $this->context->currency = new Currency((int) $cart->id_currency);
+        $this->context->cookie->id_cart = (int) $cart->id;
+        $this->context->cookie->id_currency = (int) $cart->id_currency;
+        $this->context->cookie->id_customer = (int) $customer->id;
+        $this->context->cookie->id_address_delivery = (int) $cart->id_address_delivery;
+        $this->context->cookie->id_address_invoice = (int) $cart->id_address_invoice;
+
+        $this->module->currentOrder = (int) $order->id;
+        $this->isRetryFlow = true;
+        $this->retryOrder = $order;
+    }
+
+    private function refreshOrderStateAfterRetry(): void
+    {
+        if (
+            !$this->retryOrder
+            || !(bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED)
+        ) {
+            return;
+        }
+
+        $awaitingState = (int) Configuration::get(Simpay::CONFIG_OS_AWAITING);
+        if ($awaitingState <= 0 || (int) $this->retryOrder->current_state === $awaitingState) {
+            return;
+        }
+
+        $history = new OrderHistory();
+        $history->id_order = (int) $this->retryOrder->id;
+        $history->changeIdOrderState($awaitingState, (int) $this->retryOrder->id, false);
+        $history->save();
+        $this->retryOrder->current_state = $awaitingState;
+    }
+
+    private function clearRetryFormToken(): void
+    {
+        if (!isset($this->context->cookie)) {
+            return;
+        }
+
+        unset($this->context->cookie->simpay_retry_form_token);
+        $this->context->cookie->write();
+    }
+
+    private function getStoredRetryFormToken(): string
+    {
+        if (!isset($this->context->cookie->simpay_retry_form_token)) {
+            return '';
+        }
+
+        return (string) $this->context->cookie->simpay_retry_form_token;
     }
 }

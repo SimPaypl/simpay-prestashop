@@ -107,6 +107,14 @@ final class SimpayFormType extends TranslatorAwareType
                     'Modules.Simpay.Admin'
                 ),
                 'required' => false,
+            ])
+            ->add('repayment_enabled', SwitchType::class, [
+                'label' => $this->trans(
+                    'Re-payment enabled',
+                    'Modules.Simpay.Admin'
+                ),
+                'data' => true,
+                'required' => false,
             ]);
     }
 
