@@ -113,7 +113,6 @@ final class SimpayFormType extends TranslatorAwareType
                     'Re-payment enabled',
                     'Modules.Simpay.Admin'
                 ),
-                'data' => true,
                 'required' => false,
             ]);
     }

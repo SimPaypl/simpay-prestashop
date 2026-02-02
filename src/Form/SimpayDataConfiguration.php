@@ -99,7 +99,6 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             && isset($configuration['service_id'])
             && isset($configuration['service_ipn_signature_key'])
             && isset($configuration['show_payment_methods_in_main'])
-            && isset($configuration['payment_methods_list_in_main'])
             && isset($configuration['show_blik_separately'])
             && isset($configuration['show_blik_bnpl_separately'])
             && isset($configuration['show_paypo_separately'])

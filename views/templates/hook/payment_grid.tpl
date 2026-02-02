@@ -29,7 +29,7 @@
                     <div class="simpay-payment-channels__item-inner">
                         <span class="text-xs-center">{$methodName}</span>
                         {if !empty($m.img)}
-                            <img class="img-fluid col-xs-12"
+                            <img class="img-fluid"
                                  src="{$m.img|escape:'htmlall':'UTF-8'}"
                                  alt="{$methodName}"
                                  width="80">

@@ -70,7 +70,7 @@
       <trans-unit id="77a83461ec0ee2f922cac9f238657054">
         <source>Your payment is still being processed. If the payment was interrupted or cancelled, you can safely try again using the button below.</source>
         <target>Twoja płatność jest nadal przetwarzana. Jeśli płatność została przerwana lub anulowana, możesz bezpiecznie spróbować ponownie, klikając poniższy przycisk.
-        </target>
+</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="c26aa7f4517b1f1cea5c569a0cba66c0">
@@ -108,6 +108,11 @@
         <target>Nie możemy potwierdzić Twojej płatności. Proszę spróbuj dokonać ponowienia płatności w mailu.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="36f5413ebd30267f83813da1c291de90">
+        <source>We could not finalize your payment. Please contact the shop to complete your order.</source>
+        <target>Nie udało nam się sfinalizować Twojej płatności. Skontaktuj się ze sklepem, aby dokończyć zamówienie.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="128165b2ed0ce61c042ff10a5d9aaad8">
         <source>We could not process your payment and the order is still waiting for a successful transaction.</source>
         <target>Nie możemy potwierdzić Twojej płatności i zamówienie nadal czeka na pomyślną transakcję.</target>
@@ -143,6 +148,21 @@
         <target>Kiedy płatność zostanie dokonana, status płatności zaktualizuje się automatycznie.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="1eb0f97190bc826e1c543827572873c0">
+        <source>Repayment is currently disabled. Please create a new order and complete the payment again.</source>
+        <target>Spłata jest obecnie wyłączona. Utwórz nowe zamówienie i ponownie dokonaj płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9fb66584383142057a36caa314d7b03b">
+        <source>You can review your previous order in your order history.</source>
+        <target>Swoje poprzednie zamówienie możesz sprawdzić w historii zamówień.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a50a216cbba0502dab6f006b7af0b709">
+        <source>If you need help, please contact the shop.</source>
+        <target>Jeśli potrzebujesz pomocy, skontaktuj się ze sklepem.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="c317cba4fb4b3f968f72d65cc0a21537">
         <source>Back to shop</source>
         <target>Wróć do sklepu</target>
@@ -171,7 +191,7 @@
       <trans-unit id="4599fcb193eec2268da426a887817c65">
         <source>Click the button below to continue and finalize your payment.</source>
         <target>
-          Kliknij poniższy przycisk, aby kontynuować i sfinalizować płatność.</target>
+Kliknij poniższy przycisk, aby kontynuować i sfinalizować płatność.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="228a9b35ffa18c677f6ae8bbf9a2d2f8">

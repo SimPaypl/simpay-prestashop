@@ -5,7 +5,7 @@ declare(strict_types=1);
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Service\Routing\Router;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
-use Simpaypl\Prestashop\Service\SimPayRetryPaymentService;
+use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -25,7 +25,8 @@ final class Simpay extends PaymentModule
         'displayBackOfficeHeader',
         'displayHeader',
         'displayOrderDetail',
-        'actionGetExtraMailTemplateVars'
+        'actionGetExtraMailTemplateVars',
+        'displayAdminOrderMain',
     ];
 
     public function __construct()
@@ -58,19 +59,16 @@ final class Simpay extends PaymentModule
             return false;
         }
 
-        if (!$this->createOrderState(
-            self::CONFIG_OS_AWAITING,
-            [
-                'en' => 'Awaiting SimPay payment',
-                'pl' => 'Oczekuje na płatność SimPay',
-            ],
-            '#03d14e',
-            true,
-        )) {
+        Configuration::updateValue(SimpayDataConfiguration::REPAYMENT_ENABLED, true);
+
+        if (!$this->ensureOrderState(self::CONFIG_OS_AWAITING, [
+            'en' => 'Awaiting SimPay payment',
+            'pl' => 'Oczekuje na płatność SimPay',
+        ], '#03d14e', true)) {
             return false;
         }
 
-        if (!$this->createOrderState(
+        if (!$this->ensureOrderState(
             self::CONFIG_OS_EXPIRED,
             [
                 'en' => 'SimPay payment expired',
@@ -94,6 +92,14 @@ final class Simpay extends PaymentModule
             return false;
         }
 
+        if (!$this->installPaymentAttemptTable()) {
+            return false;
+        }
+
+        if (!$this->installPaymentLogTable()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -103,18 +109,59 @@ final class Simpay extends PaymentModule
             && $this->ensureMailTemplate('simpay_retry_payment');
     }
 
-
     public function uninstall(): bool
     {
         if (!parent::uninstall()) {
             return false;
         }
 
-        if (!$this->deleteOrderState()) {
-            return false;
+        // leave order states and tables intact to preserve IDs/data
+        return true;
+    }
+
+    private function ensureOrderState(
+        string $configurationKey,
+        array $nameByLangIsoCode,
+        string $color,
+        bool $isLogable = false,
+        bool $isPaid = false,
+        bool $isInvoice = false,
+        bool $isShipped = false,
+        bool $isDelivery = false,
+        bool $isPdfDelivery = false,
+        bool $isPdfInvoice = false,
+        bool $isSendEmail = false,
+        string $template = '',
+        bool $isHidden = false,
+        bool $isUnremovable = true,
+        bool $isDeleted = false,
+    ): bool
+    {
+        $existingId = (int) Configuration::get($configurationKey);
+        if ($existingId > 0) {
+            $existing = new OrderState($existingId);
+            if (Validate::isLoadedObject($existing)) {
+                return true;
+            }
         }
 
-        return true;
+        return $this->createOrderState(
+            $configurationKey,
+            $nameByLangIsoCode,
+            $color,
+            $isLogable,
+            $isPaid,
+            $isInvoice,
+            $isShipped,
+            $isDelivery,
+            $isPdfDelivery,
+            $isPdfInvoice,
+            $isSendEmail,
+            $template,
+            $isHidden,
+            $isUnremovable,
+            $isDeleted
+        );
     }
 
     /**
@@ -139,7 +186,7 @@ final class Simpay extends PaymentModule
         $c = $this->context->controller;
 
         $phpSelf = $c->php_self ?? null;
-        if (is_string($phpSelf) && in_array($phpSelf, ['order', 'order-opc', 'order-detail'], true)) {
+        if (is_string($phpSelf) && in_array($phpSelf, ['order', 'order-opc', 'order-detail', 'guest-tracking'], true)) {
             $c->addCSS($this->_path . 'views/css/front/simpay.css');
             $c->addJS($this->_path . 'views/js/front/front.js');
             return;
@@ -511,6 +558,50 @@ final class Simpay extends PaymentModule
         $retryService->hookActionGetExtraMailTemplateVars($params);
     }
 
+    public function hookDisplayAdminOrderMain(array $params): string
+    {
+        if (!$this->shouldDisplayAdminTabs($params)) {
+            return '';
+        }
+
+        /** @var SimPayRetryPaymentService $retryService */
+        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        /** @var SimPayPaymentAttemptService $attemptService */
+        $attemptService = $this->get('prestashop.module.simpay.payment_attempt_service');
+        /** @var SimPayLogger $simpayLogger */
+        $simpayLogger = $this->get('prestashop.module.simpay.payment_logger');
+
+        $order = new Order((int) $params['id_order']);
+        $attempts = $attemptService->findByOrderId((int) $order->id);
+        $logs = $simpayLogger->getPaymentLogsForOrder((int) $order->id);
+
+        $this->context->smarty->assign([
+            'simpay_order' => $order,
+            'simpay_attempts' => $attempts,
+            'simpay_attempts_count' => count($attempts),
+            'simpay_logs_count' => 0,
+            'simpay_retry_enabled' => (bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED),
+            'simpay_retry_url' => $retryService->getRetryUrl($order),
+            'simpay_logs' => $logs,
+            'simpay_logs_count' => count($logs),
+            'simpay_module_dir' => $this->_path,
+        ]);
+
+        return $this->fetch('module:' . $this->name . '/views/templates/admin/order/order_main.tpl');
+    }
+
+    private function shouldDisplayAdminTabs(array $params): bool
+    {
+        $orderId = (int) ($params['id_order'] ?? 0);
+        if ($orderId <= 0) {
+            return false;
+        }
+
+        $order = new Order($orderId);
+
+        return Validate::isLoadedObject($order) && $order->module === $this->name;
+    }
+
     public static function isUpdatableState(int $stateId): bool {
         $allowedStates = array_map('intval', [
             Configuration::get(self::CONFIG_OS_AWAITING),
@@ -527,5 +618,43 @@ final class Simpay extends PaymentModule
         $currencyOrder = new Currency($cart->id_currency);
 
         return 'PLN' === $currencyOrder->iso_code;
+    }
+
+    private function installPaymentAttemptTable(): bool
+    {
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_payment_attempt` (
+            `id_simpay_payment_attempt` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `id_order` INT UNSIGNED DEFAULT NULL,
+            `id_cart` INT UNSIGNED NOT NULL,
+            `transaction_id` VARCHAR(64) NOT NULL,
+            `channel` VARCHAR(64) DEFAULT NULL,
+            `payment_type` VARCHAR(32) DEFAULT NULL,
+            `status` VARCHAR(32) DEFAULT NULL,
+            `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+            `created_at` DATETIME NOT NULL,
+            `updated_at` DATETIME NOT NULL,
+            PRIMARY KEY (`id_simpay_payment_attempt`),
+            UNIQUE KEY `uniq_simpay_transaction` (`transaction_id`),
+            KEY `idx_simpay_order` (`id_order`),
+            KEY `idx_simpay_cart` (`id_cart`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installPaymentLogTable(): bool
+    {
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_payment_log` (
+            `id_simpay_payment_log` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `id_order` INT UNSIGNED DEFAULT NULL,
+            `level` VARCHAR(16) NOT NULL,
+            `message` VARCHAR(255) NOT NULL,
+            `context` LONGTEXT NULL,
+            `created_at` DATETIME NOT NULL,
+            PRIMARY KEY (`id_simpay_payment_log`),
+            KEY `idx_simpay_log_order` (`id_order`),
+            KEY `idx_simpay_log_level` (`level`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
+
+        return Db::getInstance()->execute($sql);
     }
 }

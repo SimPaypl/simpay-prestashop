@@ -7,6 +7,8 @@ namespace SimPaypl\PrestaShop\Helper;
 use Configuration;
 use DateTime;
 use Tools;
+use Db;
+use PrestaShopLogger;
 
 final class SimPayLogger
 {
@@ -15,44 +17,20 @@ final class SimPayLogger
     public const WARNING = 'warning';
     public const ERROR = 'error';
 
-    private const CFG_ENABLED = 'SIMPAY_DEBUG_LOGS_ENABLED';
+    private static ?int $defaultOrderId = null;
 
-    // If true, each request starts with empty file
-    private static bool $truncateOnStart = true;
-
-    // Internal: ensures truncate happens only once per request
-    private static bool $didTruncate = false;
-
-    public static function enableTruncateOnStart(bool $enabled): void
+    public static function setDefaultOrderId(int $orderId): void
     {
-        self::$truncateOnStart = $enabled;
-    }
-
-    public static function reset(): void
-    {
-        if (!self::isEnabled()) {
-            return;
-        }
-
-        self::$didTruncate = true; // prevent double truncate this request
-        @file_put_contents(self::getFilePath(), '');
+        self::$defaultOrderId = $orderId;
     }
 
     public static function log(string $type, string $message, array $context = []): void
     {
-        if (!self::isEnabled()) {
-            return;
+        if (!isset($context['id_order']) && self::$defaultOrderId) {
+            $context['id_order'] = self::$defaultOrderId;
         }
 
-        $path = self::getFilePath();
-
-        // Truncate once per request (optional)
-        if (self::$truncateOnStart && !self::$didTruncate) {
-            @file_put_contents($path, '');
-            self::$didTruncate = true;
-        }
-
-        @file_put_contents($path, self::processRecord($type, $message, $context), FILE_APPEND);
+        self::writeDb($type, $message, $context);
     }
 
     public static function info(string $message, array $context = []): void
@@ -73,6 +51,15 @@ final class SimPayLogger
     public static function error(string $message, array $context = []): void
     {
         self::log(self::ERROR, $message, $context);
+
+        PrestaShopLogger::addLog(
+            '[SimPay] ' . $message,
+            3,
+            0,
+            'SimPay',
+            0,
+            true
+        );
     }
 
     public static function respond(int $code, string $body, string $stage, array $context = []): void
@@ -80,16 +67,6 @@ final class SimPayLogger
         self::log('resp', $stage, array_merge(['code' => $code, 'body' => $body], $context));
         http_response_code($code);
         die($body);
-    }
-
-    private static function isEnabled(): bool
-    {
-        // If Configuration is not available yet, log anyway (webhook debugging)
-        try {
-            return (int) true === 1;
-        } catch (\Throwable $e) {
-            return true;
-        }
     }
 
     private static function processRecord(string $type, string $message, array $context): string
@@ -102,7 +79,6 @@ final class SimPayLogger
         return self::getTimestamp() . ' ' . $level . ' ' . $out . PHP_EOL;
     }
 
-    // Paynow-style {} placeholders interpolation
     private static function interpolate(string $message, array $context): string
     {
         $hasPlaceholders = strpos($message, '{}') !== false;
@@ -117,7 +93,7 @@ final class SimPayLogger
                     $val = $context[$i - 1];
                     $out .= is_array($val)
                         ? json_encode($val, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-                        : (string) $val;
+                        : (string)$val;
                 }
                 $out .= $split[$i];
             }
@@ -137,7 +113,7 @@ final class SimPayLogger
     {
         // Keep microseconds (do NOT cast to int)
         $now = microtime(true);
-        $micro = sprintf('%06d', (int) (($now - floor($now)) * 1000000));
+        $micro = sprintf('%06d', (int)(($now - floor($now)) * 1000000));
 
         $dt = DateTime::createFromFormat('U.u', sprintf('%.6f', $now));
         if ($dt instanceof DateTime) {
@@ -148,48 +124,75 @@ final class SimPayLogger
         return date('Y-m-d H:i:s') . '.' . $micro;
     }
 
-    private static function getFilePath(): string
+    private static function writeDb(string $type, string $message, array $context): void
     {
-        $root = defined('_PS_ROOT_DIR_') ? (string) _PS_ROOT_DIR_ : null;
+        try {
+            $orderId = self::extractOrderId($context);
+            if (!$orderId && self::$defaultOrderId) {
+                $orderId = self::$defaultOrderId;
+            }
 
-        $logDir = $root
-            ? rtrim($root, '/') . '/modules/simpay/logs'
-            : sys_get_temp_dir() . '/simpay-logs';
+            Db::getInstance()->insert('simpay_payment_log', [
+                'id_order' => $orderId ?: null,
+                'level' => pSQL($type),
+                'message' => pSQL($message),
+                'context' => pSQL(json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), true),
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            PrestaShopLogger::addLog(
+                '[SimPay] Logger DB write failed: ' . $e->getMessage(),
+                3,
+                0,
+                'SimPay',
+                0,
+                true
+            );
+        }
+    }
 
-        // Try create dir
-        if (!is_dir($logDir)) {
-            $mk = @mkdir($logDir, 0775, true);
-            if (!$mk) {
-                $err = error_get_last();
-                error_log('[SimPayLogger] mkdir failed: ' . $logDir . ' | ' . ($err['message'] ?? 'unknown'));
+    private static function extractOrderId(array $context): ?int
+    {
+        foreach (['order_id', 'id_order', 'order'] as $key) {
+            if (!array_key_exists($key, $context)) {
+                continue;
+            }
+
+            $val = $context[$key];
+
+            if (is_int($val) || (is_string($val) && ctype_digit($val))) {
+                return (int)$val;
+            }
+
+            if (is_object($val) && isset($val->id)) {
+                return (int)$val->id;
+            }
+
+            if (is_array($val) && isset($val['id']) && ctype_digit((string)$val['id'])) {
+                return (int)$val['id'];
             }
         }
 
-        // Check writable
-        if (!is_dir($logDir)) {
-            error_log('[SimPayLogger] logDir not a dir: ' . $logDir);
-            return sys_get_temp_dir() . '/simpay-ipn.log';
-        }
-
-        if (!is_writable($logDir)) {
-            error_log('[SimPayLogger] logDir not writable: ' . $logDir);
-            error_log('[SimPayLogger] perms: ' . substr(sprintf('%o', @fileperms($logDir)), -4));
-            error_log('[SimPayLogger] owner: ' . (@fileowner($logDir) ?: 'n/a') . ' group: ' . (@filegroup($logDir) ?: 'n/a'));
-            return sys_get_temp_dir() . '/simpay-ipn.log';
-        }
-
-        $file = $logDir . '/simpay-ipn.log';
-
-        // Smoke test write (only for debugging; safe and tiny)
-        if (!file_exists($file)) {
-            $ok = @file_put_contents($file, '');
-            if ($ok === false) {
-                $err = error_get_last();
-                error_log('[SimPayLogger] file create failed: ' . $file . ' | ' . ($err['message'] ?? 'unknown'));
-                return sys_get_temp_dir() . '/simpay-ipn.log';
+        // Fallback: try to read from request
+        if (class_exists(Tools::class)) {
+            $reqOrderId = Tools::getValue('id_order') ?: Tools::getValue('order_id');
+            if (is_string($reqOrderId) && ctype_digit($reqOrderId)) {
+                return (int)$reqOrderId;
             }
         }
 
-        return $file;
+        return null;
+    }
+
+    public function getPaymentLogsForOrder(int $orderId, int $limit = 50): array
+    {
+        $sql = sprintf(
+            'SELECT * FROM `%1$ssimpay_payment_log` WHERE `id_order` = %2$d ORDER BY `id_simpay_payment_log` ASC LIMIT %3$d',
+            _DB_PREFIX_,
+            (int) $orderId,
+            (int) $limit
+        );
+
+        return (array) Db::getInstance()->executeS($sql);
     }
 }

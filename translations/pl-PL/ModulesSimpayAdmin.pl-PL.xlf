@@ -107,6 +107,81 @@
         <target>Ponów płatność</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="daef64964ee3b9b904f5d467586e217f">
+        <source>Payments</source>
+        <target>Płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b2d37ae1cedf42ff874289b721860af2">
+        <source>Logs</source>
+        <target>Logi</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="44749712dbec183e983dcd78a7736c41">
+        <source>Date</source>
+        <target>Data</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4c3880bb027f159e801041b1021e88e8">
+        <source>Method</source>
+        <target>Metoda</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="88427ec035734b45aae9f7d8859a5008">
+        <source>Transaction ID</source>
+        <target>ID transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ec53a8c4f07baed5d8825072c89799be">
+        <source>Status</source>
+        <target>Status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4d3d769b812b6faa6b76e1a8abaece2d">
+        <source>Active</source>
+        <target>Aktywny</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="88be462393cefdff076d13eca7338ea2">
+        <source>SimPay</source>
+        <target>SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="93cba07454f06a4a960172bbd6e2a435">
+        <source>Yes</source>
+        <target>Tak</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bafd7322c6e97d25b6299b5d6fe8920b">
+        <source>No</source>
+        <target>Nie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bba1b3ffe4e673b064fce15912a643f0">
+        <source>No payment attempts.</source>
+        <target>Brak prób płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a0db49ba470c1c9ae2128c3470339153">
+        <source>Level</source>
+        <target>Poziom</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4c2a8fe7eaf24721cc7a9f0175115bd4">
+        <source>Message</source>
+        <target>Wiadomość</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ad4e206408c1c59bfb8a057ba7857446">
+        <source>Context</source>
+        <target>Kontekst</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4d38189e05f908981854b2132765843b">
+        <source>No logs for this order.</source>
+        <target>Brak logów dla tego zamówienia.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="60f4b3723660e9d78a1a6cc274dcfb94">
         <source>Configuring the SimPay connection to the store</source>
         <target>Konfiguracja połączenia SimPay ze sklepem</target>

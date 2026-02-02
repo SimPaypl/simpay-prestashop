@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
+use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
+
 final class SimpayRetryModuleFrontController extends ModuleFrontController
 {
     /** @var Simpay */
@@ -15,6 +18,10 @@ final class SimpayRetryModuleFrontController extends ModuleFrontController
         $order = new Order($idOrder);
         if (!Validate::isLoadedObject($order)) {
             Tools::redirect('index.php');
+        }
+
+        if (!(bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED)) {
+            Tools::redirect($this->getOrderViewUrl($order));
         }
 
         /** @var SimPayRetryPaymentService $retryService */

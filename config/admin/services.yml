@@ -26,6 +26,12 @@ services:
     arguments:
       - '@prestashop.module.simpay.front.payment_client'
 
+  prestashop.module.simpay.payment_attempt_service:
+    class: 'SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService'
+
+  prestashop.module.simpay.payment_logger:
+    class: 'SimPaypl\PrestaShop\Helper\SimPayLogger'
+
   prestashop.module.simpay.retry_payment_service:
     class: 'SimPaypl\PrestaShop\Service\SimPayRetryPaymentService'
     arguments:

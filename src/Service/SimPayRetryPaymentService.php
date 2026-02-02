@@ -9,7 +9,6 @@ use PrestaShop\PrestaShop\Adapter\LegacyContext;
 use Context;
 use Customer;
 use Db;
-use Mail;
 use Order;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use Validate;
@@ -27,6 +26,10 @@ final class SimPayRetryPaymentService
 
     public function hookDisplayOrderDetail(array $params, string $moduleFile): string
     {
+        if (!(bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED)) {
+            return '';
+        }
+
         $order = $params['order'] ?? null;
         if (!$order instanceof Order || !Validate::isLoadedObject($order)) {
             return '';
@@ -69,7 +72,10 @@ final class SimPayRetryPaymentService
 
     public function getRetryUrl(Order $order): string
     {
-        if (!isset($this->context->link)) {
+        if (
+            !(bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED)
+            || !isset($this->context->link)
+        ) {
             return '';
         }
 
@@ -123,7 +129,7 @@ final class SimPayRetryPaymentService
             return;
         }
 
-        $url = $this->buildRepaymentAnchorUrl($order, $customer);
+        $url = $this->getRetryUrl($order);
         if ($url === '') {
             return;
         }
@@ -168,7 +174,7 @@ final class SimPayRetryPaymentService
         if (!$orderId && !empty($params['template_vars']['{order_name}'])) {
             $reference = pSQL((string) $params['template_vars']['{order_name}']);
             $orderId = (int) Db::getInstance()->getValue(
-                'SELECT id_order FROM ' . _DB_PREFIX_ . 'orders WHERE reference = "' . $reference . '"'
+                'SELECT id_order FROM ' . _DB_PREFIX_ . 'orders WHERE reference = \'' . $reference . '\''
             );
         }
 
@@ -179,31 +185,5 @@ final class SimPayRetryPaymentService
         $order = new Order($orderId);
 
         return Validate::isLoadedObject($order) ? $order : null;
-    }
-
-    private function buildRepaymentAnchorUrl(Order $order, Customer $customer): string
-    {
-        if (!isset($this->context->link)) {
-            return '';
-        }
-
-        if ((bool) $customer->is_guest) {
-            return $this->context->link->getPageLink(
-                'guest-tracking',
-                true,
-                (int) $order->id_lang,
-                [
-                    'email' => $customer->email,
-                    'order_reference' => $order->reference,
-                ]
-            ) . '#simpay-repayment';
-        }
-
-        return $this->context->link->getPageLink(
-            'order-detail',
-            true,
-            (int) $order->id_lang,
-            ['id_order' => (int) $order->id]
-        ) . '#simpay-repayment';
     }
 }

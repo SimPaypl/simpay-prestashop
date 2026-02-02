@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
 use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
 use SimPaypl\PrestaShop\SimPayApiService;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
+use SimPaypl\PrestaShop\Helper\SimPayLogger;
 
 final class SimpayValidateModuleFrontController extends ModuleFrontController
 {
@@ -43,8 +44,11 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         /** @var Cart $cart */
         $cart = $this->context->cart;
+
         /** @var Currency $currency */
         $currency = $this->context->currency;
+
+        $attemptService = new SimPayPaymentAttemptService();
 
         $customer = new Customer($cart->id_customer);
         if (false === Validate::isLoadedObject($customer)) {
@@ -104,13 +108,11 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         $json = json_decode($response->getContent(), false);
 
+        $transactionId = (string) $json->data->transactionId;
         $cartId = (int) $cart->id;
         $orderStateAwaiting = (int) Configuration::get(Simpay::CONFIG_OS_AWAITING);
         $orderTotal = $cart->getOrderTotal();
         $paymentName = $this->trans('SimPay', [], 'Modules.Simpay.Shop');
-        $paymentDetails = [
-            'transaction_id' => $json->data->transactionId,
-        ];
         $currencyId = $currency->id;
         $secureKey = $customer->secure_key;
 
@@ -121,14 +123,38 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
                 $orderTotal,
                 $paymentName,
                 null,
-                $paymentDetails,
+                null,
                 $currencyId,
                 false,
                 $secureKey,
             );
+
+            $order = new Order((int) $this->module->currentOrder);
         } else {
             $this->refreshOrderStateAfterRetry();
+            $order = $this->retryOrder;
         }
+
+        if (!Validate::isLoadedObject($order)) {
+            $this->redirectToOrder();
+            return;
+        }
+
+        SimPayLogger::setDefaultOrderId((int) $order->id);
+        SimPayLogger::info($this->trans('Order payment started', [], 'Modules.Simpay.Logs'), [
+            'id_order' => (int) $order->id,
+            'transaction_id' => $transactionId,
+            'flow' => $this->isRetryFlow
+                ? $this->trans('Repayment', [], 'Modules.Simpay.Logs')
+                : $this->trans('Checkout', [], 'Modules.Simpay.Logs'),
+        ]);
+
+        $attemptService->registerAttempt(
+            $order,
+            $transactionId,
+            $method ?: null,
+            $this->isRetryFlow ? 'retry' : 'checkout'
+        );
 
         $this->setTemplate('module:simpay/views/templates/front/validate.tpl');
         $this->context->smarty?->assign([
@@ -248,6 +274,12 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         $this->module->currentOrder = (int) $order->id;
         $this->isRetryFlow = true;
         $this->retryOrder = $order;
+
+        SimPayLogger::setDefaultOrderId((int) $order->id);
+        SimPayLogger::info(
+            $this->trans('Repayment initiated by customer', [], 'Modules.Simpay.Logs'),
+            ['id_order' => (int) $order->id]
+        );
     }
 
     private function refreshOrderStateAfterRetry(): void
