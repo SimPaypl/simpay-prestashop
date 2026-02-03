@@ -36,6 +36,8 @@ jobs:
           tag: "${{ github.ref_name }}"
           name: "${{ github.ref_name }}"
           generateReleaseNotes: true
+          allowUpdates: true
+          replacesArtifacts: true
           artifacts: |
             simpay-prestashop-${{ github.ref_name }}.zip
             simpay-prestashop-${{ github.ref_name }}.zip.sha256
