@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin024kshlwkyxogluqvpr" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="d566e3c9dfa8e4727cbb09f5c5a5fecd">
+        <source>Order payment started</source>
+        <target>Rozpoczęto płatność za zamówienie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5bea85ef30027a5140724d6fb1db5f95">
+        <source>Repayment</source>
+        <target>Ponowienie płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6ff063fbc860a79759a7369ac32cee22">
+        <source>Checkout</source>
+        <target>Zamówienie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="91ab6b7ab815b602581a9b3de208c7fd">
+        <source>Repayment initiated by customer</source>
+        <target>Ponowienie płatności rozpoczęte przez klienta</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e84e55d186de7883e285e32fc32bfa7c">
+        <source>Method not allowed</source>
+        <target>Metoda niedozwolona</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5bf066bfdc3b46f294cf62fb9b9e8290">
+        <source>Webhook received</source>
+        <target>Otrzymano informację o zamówieniu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="558368252f02a4fd38c7e40d18d28bc1">
+        <source>Webhook data received</source>
+        <target>Otrzymano dane zamówienia</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8bc87eb582af546d32505f2839234119">
+        <source>Invalid payload</source>
+        <target>Nieprawidłowe dane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a6aa7b03e3a52fce8c135da0af1d6e42">
+        <source>Invalid IP</source>
+        <target>Nieprawidłowy adres IP</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9b259cd9eab1f7ea9abf1f4c4fa5359a">
+        <source>IPN version is not supported</source>
+        <target>Wersja IPN nie jest obsługiwana</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5724c17391eaa0349bb92b22816f3d0f">
+        <source>Invalid JSON</source>
+        <target>Nieprawidłowy JSON</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d10fb60c71d2c232120f9df29cbc7989">
+        <source>Validation failed</source>
+        <target>Walidacja nie powiodła się</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fca3fbced675f75182786525bf4706dc">
+        <source>Invalid signature</source>
+        <target>Nieprawidłowa sygnatura</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dde15f0be64ad9bd32421b8adecabdbb">
+        <source>Webhook type received</source>
+        <target>Odebrano informację o płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="becd4110cc907da83031cd6e8b03ab30">
+        <source>Transaction status change event received</source>
+        <target>Otrzymano zdarzenie zmiany statusu transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1b96cd1835267048e4bec126030b84c7">
+        <source>Missing transaction id</source>
+        <target>Brak identyfikatora transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a6314ecf3e51f254c8cf9973d4a24723">
+        <source>Unknown transaction, event ignored</source>
+        <target>Nieznana transakcja, zdarzenie zignorowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0fd8fb98cff194dc5057b1c65218814b">
+        <source>Order not found for transaction</source>
+        <target>Nie znaleziono zamówienia dla transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="24909e87dc242b9dd539e10609b8b050">
+        <source>Order not found</source>
+        <target>Nie znaleziono zamówienia</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="63796998742201ac8dba30c469a58fd5">
+        <source>Order already processed, event ignored</source>
+        <target>Zamówienie już przetworzone, zdarzenie zignorowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1850375c84db28f397ea4dc64560e6f2">
+        <source>Transaction status received</source>
+        <target>Otrzymano status transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f4bfcabd689c999a5fe136cde8c40005">
+        <source>Inactive attempt, event ignored</source>
+        <target>Próba nieaktywna, zdarzenie zignorowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d39a44b6962d7d0c7b6c01a26d732b99">
+        <source>Unknown status, event ignored</source>
+        <target>Nieznany status, zdarzenie zignorowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2e335de9a8cb56a980ed0992766163e4">
+        <source>Duplicate status, event ignored</source>
+        <target>Duplikat statusu, zdarzenie zignorowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dbc2fd151e1cda1f06a75b717de2151c">
+        <source>Amount too low</source>
+        <target>Kwota płatności jest zbyt niska</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a9ced76f2dd6907220fa95b3a136b04a">
+        <source>Invalid amount</source>
+        <target>Nieprawidłowa kwota</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b273af0e3066aebc11585ed3bc4be77">
+        <source>Order status updated successfully</source>
+        <target>Status zamówienia został pomyślnie zaktualizowany</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="eadb39cfef11844ac90ab8101cc83ed4">
+        <source>Order update failed</source>
+        <target>Aktualizacja zamówienia nie powiodła się</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

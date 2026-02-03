@@ -4,3 +4,6 @@ vendor/
 composer.lock
 .php-cs-fixer.php
 .php-cs-fixer.cache
+.idea
+.DS_Store
+No newline at end of file

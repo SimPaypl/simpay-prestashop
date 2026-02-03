@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin024kshlwkyxogluqvpr" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="a6b0eb0cf7af701790265d8685db4ebd">
+        <source>We could not initialize the payment. Please try again or contact the shop.</source>
+        <target>Nie udało się zainicjować płatności. Spróbuj ponownie lub skontaktuj się ze sklepem.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="88be462393cefdff076d13eca7338ea2">
+        <source>SimPay</source>
+        <target>SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e2b7dec8fa4b498156dfee6e4c84b156">
+        <source>This payment method is not available.</source>
+        <target>Ta metoda płatności jest niedostępna.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b911f5a69f198f1eedf06eaf5b59d6fb">
+        <source>SimPay module module isn't active.</source>
+        <target>Moduł SimPay nie jest aktywny.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d3287dd51f6daf210fd5c49d2cb566da">
+        <source>Pay with BLIK</source>
+        <target>Zapłać BLIKIEM</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f233de11017582ab42e24e0dd2cea51">
+        <source>BLIK Pay Later</source>
+        <target>BLIK Płacę Później</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7e6afd2ccbff374aaefc8ca6676d1d11">
+        <source><![CDATA[Learn more at <a href=":url" target="_blank">:url</a>]]></source>
+        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">:url</a>]]></target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3afd983fc0ed0cab779eddcbed5accbe">
+        <source>PayPo – Buy now, pay later</source>
+        <target>PayPo – kup teraz, zapłać później</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="943260a37d0ce1db9ba58daedc22e49b">
+        <source><![CDATA[Learn more at <a href=":url" target="_blank">paypo.pl</a>]]></source>
+        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">paypo.pl</a>]]></target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7bb28e4afd9fa2849ece7e460be697a5">
+        <source>Pay by transfer with SimPay</source>
+        <target>Zapłać przelewem z SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f7ae98bdc36ea2686daed151216abf6">
+        <source>Retry payment</source>
+        <target>Ponów płatność</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a240fa27925a635b08dc28c9e4f9216d">
+        <source>Order</source>
+        <target>Zamówienie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c15fb56c3ea224de4565358ed50b6f2c">
+        <source>Repay with %s</source>
+        <target>Ponów płatność z %s</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="77a83461ec0ee2f922cac9f238657054">
+        <source>Your payment is still being processed. If the payment was interrupted or cancelled, you can safely try again using the button below.</source>
+        <target>Twoja płatność jest nadal przetwarzana. Jeśli płatność została przerwana lub anulowana, możesz bezpiecznie spróbować ponownie, klikając poniższy przycisk.
+</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c26aa7f4517b1f1cea5c569a0cba66c0">
+        <source>Repay now</source>
+        <target>Ponów płatność</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0da0a5ab420b2906c2c3c593d6d78647">
+        <source>Please select a payment method</source>
+        <target>Proszę wybrać metodę płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c8d46e411afd1674eeb3295a8035563f">
+        <source>Redirecting… please wait</source>
+        <target>Trwa przekierowanie… proszę czekać</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="054fba7e9e5b01380b5f5418e5d2f0e8">
+        <source>If you are not redirected automatically, please</source>
+        <target>Jeśli nie nastąpi automatyczne przekierowanie,</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a4ea91cd0d1ea33d8113457644dd6157">
+        <source>click here</source>
+        <target>kliknij tutaj</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="94e7103b85b3c4e3067d7739545be9f6">
+        <source>SimPay – payment issue</source>
+        <target>SimPay – problem z płatnością</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1211150433c771c8a48c139c1648cd50">
+        <source>We could not finalize your payment. Please retry the payment from your email.</source>
+        <target>Nie możemy potwierdzić Twojej płatności. Proszę spróbuj dokonać ponowienia płatności w mailu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="36f5413ebd30267f83813da1c291de90">
+        <source>We could not finalize your payment. Please contact the shop to complete your order.</source>
+        <target>Nie udało nam się sfinalizować Twojej płatności. Skontaktuj się ze sklepem, aby dokończyć zamówienie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="128165b2ed0ce61c042ff10a5d9aaad8">
+        <source>We could not process your payment and the order is still waiting for a successful transaction.</source>
+        <target>Nie możemy potwierdzić Twojej płatności i zamówienie nadal czeka na pomyślną transakcję.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ef053453f9160b907a616cb1e79d3798">
+        <source>Payment issue</source>
+        <target>Problem z płatnością</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="162afac41bbc84b579c985952c4eeb81">
+        <source>What should you do now?</source>
+        <target>Co powinieneś teraz zrobić?</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="567ea4e7bf4e6b9da1603bfd69b1d22b">
+        <source>Open the order confirmation email and click the “Retry payment” link to try again.</source>
+        <target>Otwórz swoje potwierdzenie zamówienie w mailu i kliknij "Ponów płatność" aby spróbować zapłacić ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="53782b49c70c1f857d8ccd44220a884c">
+        <source>Check your spam folder if you did not receive the email.</source>
+        <target>Sprawdź swój folder spam, żeby upewnić się czy nie dostałeś emaila.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="af93ed5ba56cc3e78197070e45b8657b">
+        <source>You can resend the confirmation from your order history.</source>
+        <target>Możesz też ponowić płatność w Twojej historii zamówienia.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8fb51dae572b98210ffdd7de3c371e1a">
+        <source>Once the payment succeeds, the order status will update automatically.</source>
+        <target>Kiedy płatność zostanie dokonana, status płatności zaktualizuje się automatycznie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1eb0f97190bc826e1c543827572873c0">
+        <source>Repayment is currently disabled. Please create a new order and complete the payment again.</source>
+        <target>Spłata jest obecnie wyłączona. Utwórz nowe zamówienie i ponownie dokonaj płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9fb66584383142057a36caa314d7b03b">
+        <source>You can review your previous order in your order history.</source>
+        <target>Swoje poprzednie zamówienie możesz sprawdzić w historii zamówień.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a50a216cbba0502dab6f006b7af0b709">
+        <source>If you need help, please contact the shop.</source>
+        <target>Jeśli potrzebujesz pomocy, skontaktuj się ze sklepem.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c317cba4fb4b3f968f72d65cc0a21537">
+        <source>Back to shop</source>
+        <target>Wróć do sklepu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0556c0efe870c940d85f8cd46aed3ef6">
+        <source>SimPay – retry payment</source>
+        <target>SimPay - ponowienie płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="90181cb9730a6e6b635915ca72ab79fc">
+        <source>Retry your SimPay payment if the previous attempt expired.</source>
+        <target>Ponów swoją płatność SimPay jeśli poprzednia płatność wygasła.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="694ddf5adf5bdfb6752e663520e1483d">
+        <source>We are preparing your SimPay retry</source>
+        <target>Przygotowujemy ponowną próbę płatności SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b913dabf84a2fbeb711e6873210228b7">
+        <source>Order reference:</source>
+        <target>Numer zamówienia: </target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4599fcb193eec2268da426a887817c65">
+        <source>Click the button below to continue and finalize your payment.</source>
+        <target>
+Kliknij poniższy przycisk, aby kontynuować i sfinalizować płatność.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="228a9b35ffa18c677f6ae8bbf9a2d2f8">
+        <source>Retry payment now</source>
+        <target>Ponów płatność</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="32ad9011af9069f517bee1c507a1551a">
+        <source>This order has already been paid</source>
+        <target>To zamówienie zostało już opłacone</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c8fdf40485a61e1d0fbc44639f5104f8">
+        <source>The payment was already completed, no further action is needed.</source>
+        <target>Płatność została już dokonana, nie ma potrzeby podejmowania dalszych działań.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5158c5f24ae38ffc472965bfaf4472e7">
+        <source>Go to order details</source>
+        <target>Przejdź do szczegółów zamówienia</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

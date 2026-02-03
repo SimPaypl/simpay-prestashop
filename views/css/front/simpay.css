@@ -1,5 +1,148 @@
 .payment-option img[src*=simpay] {
     margin-left: .5rem;
-    width: 7.5rem;
-    height: 2em;
+    max-width: 90px;
+}
+
+body#checkout .additional-information:has(.simpay-wrapper) {
+    margin-left: unset;
+}
+
+.simpay-payment-channels {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    margin-top: 1rem;
+}
+
+.simpay-payment-channels__item {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    display: block;
+}
+
+.simpay-payment-channels__item img {
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    height: 45px;
+    margin-bottom: 5px;
+}
+
+.simpay-payment-channels__item span {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.6rem;
+    color: #202225;
+    display: block;
+    margin-bottom: 2.5px;
+}
+
+.simpay-payment-channels__item:hover .simpay-payment-channels__item-inner,
+.simpay-payment-channels__item--active .simpay-payment-channels__item-inner {
+    box-shadow: 0 0 12px #0dd15073;
+    border: 1px solid #03d14e47;
+    transition: box-shadow 125ms ease-out;
+    -webkit-transition: box-shadow 150ms ease-out;
+    -o-transition: box-shadow 125ms ease-out;
+    -moz-transition: box-shadow 150ms ease-out;
+}
+
+.simpay-payment-channels__item-inner {
+    width: 100%;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #DDDDDD;
+    padding: 1rem;
+    height: 100%;
+    justify-content: center;
+    cursor: pointer;
+    transition: box-shadow 150ms ease-out;
+    -webkit-transition: box-shadow 150ms ease-out;
+    -moz-transition: box-shadow 150ms ease-out;
+    -o-transition: box-shadow 150ms ease-out;
+}
+
+.simpay-repayment{
+    display:flex;
+    align-items:stretch;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.simpay-repayment__content{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    max-width: 50%;
+}
+
+.simpay-repayment__title{ margin-bottom:12px; }
+.simpay-repayment__logo{
+    display:flex;
+    align-items:center;
+}
+
+.simpay-repayment__button {
+    width: fit-content;
+}
+
+@media (max-width: 767px) {
+    .simpay-repayment__content {
+        max-width: unset;
+    }
+    .simpay-repayment {
+        flex-direction: column;
+    }
+}
+
+.simpay-wrapper {
+    margin: 1.5rem auto;
+}
+
+.simpay-box {
+    padding: 1rem 0;
+}
+
+.simpay-box .alert {
+    margin-bottom: 18px;
+    border-radius: 8px;
+}
+
+.simpay-subtitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 6px 0 10px;
+}
+
+.simpay-text {
+    margin: 0 0 14px;
+    color: #333;
+}
+
+.simpay-list {
+    margin: 0 0 14px;
+    padding-left: 18px;
+    list-style: disc;
+}
+
+.simpay-list li {
+    margin: 0 0 8px;
+    color: #444;
+}
+
+.simpay-muted {
+    margin: 0 0 18px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.simpay-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

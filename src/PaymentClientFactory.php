@@ -15,6 +15,6 @@ final class PaymentClientFactory
     }
     public function __invoke(): SimPayApiService
     {
-        return new SimPayApiService($this->configuration->get('SIMPAY_API_PASSWORD'));
+        return new SimPayApiService($this->configuration->get('SIMPAY_API_PASSWORD'), $this->configuration->get('SIMPAY_SERVICE_ID'));
     }
 }

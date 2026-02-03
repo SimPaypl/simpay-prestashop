@@ -10,3 +10,29 @@ services:
   prestashop.module.simpay.front.payment_client:
     class: 'Simpay\PaymentInterface'
     factory: '@prestashop.module.simpay.front.payment_client_factory'
+
+  prestashop.module.simpay.channel_cache:
+    class: 'SimPaypl\PrestaShop\Helper\SimPayChannelCache'
+    arguments:
+      - '@prestashop.module.simpay.front.payment_client'
+
+  prestashop.module.simpay.payment_request_builder:
+    class: 'SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder'
+    arguments:
+      - '@prestashop.adapter.legacy.context'
+
+  prestashop.module.simpay.module:
+    class: 'Simpay'
+    factory: [ 'Module', 'getInstanceByName' ]
+    arguments:
+      - 'simpay'
+    public: true
+
+  simpay.module:
+    alias: 'prestashop.module.simpay.module'
+
+  prestashop.module.simpay.retry_payment_service:
+    class: 'SimPaypl\PrestaShop\Service\SimPayRetryPaymentService'
+    arguments:
+      - '@simpay.module'
+      - '@prestashop.adapter.legacy.context'

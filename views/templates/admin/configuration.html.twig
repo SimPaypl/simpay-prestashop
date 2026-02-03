@@ -1,28 +1,72 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
 
 {% block content %}
+    {% set updateInfo = simpay_update_info|default(configurationForm.vars.data.update_info|default(null)) %}
+
+    {% if updateInfo %}
+        <div class="alert alert-warning">
+            {{ 'A new SimPay module version (:ver) is available.'|trans({':ver': updateInfo.latest_version}, 'Modules.Simpay.Admin') }}
+            <a href="{{ updateInfo.zip_url }}" target="_blank" rel="noopener">
+                {{ 'Download ZIP'|trans({}, 'Modules.Simpay.Admin') }}
+            </a>
+        </div>
+    {% endif %}
+
     {{ form_start(configurationForm) }}
+
     <div class="row justify-content-center">
         <div class="col-xl-10">
+
+            <div class="card mb-3">
+                <h3 class="card-header">
+                    <i class="material-icons">settings</i>
+                    {{ 'Configuring the SimPay connection to the store'|trans({}, 'Modules.Simpay.Admin') }}
+                </h3>
+
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        {{ 'Before configuring the payment gateway, make sure you have entered the "IPN URL address" in the SimPay panel.'|trans({}, 'Modules.Simpay.Admin') }}
+                    </div>
+
+                    <div class="form-wrapper">
+                        {{ form_row(configurationForm.service_ipn_notify_url) }}
+                        {{ form_row(configurationForm.api_password) }}
+                        {{ form_row(configurationForm.service_id) }}
+                        {{ form_row(configurationForm.service_ipn_signature_key) }}
+                        {{ form_row(configurationForm.ipn_check_ip) }}
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3 class="card-header">
-                    <i class="material-icons">settings</i> {{ 'Ustawienia płatności SimPay'|trans({}, 'Modules.Simpay.Admin') }}
+                    <i class="material-icons">dns</i>
+                    {{ 'Configuration of displayed payments'|trans({}, 'Modules.Simpay.Admin') }}
                 </h3>
 
                 <div class="card-body">
                     <div class="form-wrapper">
-                        {{ form_widget(configurationForm) }}
+                        {{ form_row(configurationForm.show_payment_methods_in_main) }}
+                        {% include '@Modules/simpay/views/templates/admin/config/_payment_methods_block.html.twig' %}
+                        {{ form_row(configurationForm.show_blik_separately) }}
+                        {{ form_row(configurationForm.show_blik_bnpl_separately) }}
+                        {{ form_row(configurationForm.show_paypo_separately) }}
+                        {{ form_row(configurationForm.repayment_enabled) }}
                     </div>
                 </div>
 
                 <div class="card-footer">
                     <div class="d-flex justify-content-end">
-                        <button class="btn btn-primary">{{ 'Zapisz'|trans({}, 'Modules.Simpay.Admin') }}</button>
-
+                        <button type="submit" class="btn btn-primary">
+                            {{ 'Save'|trans({}, 'Modules.Simpay.Admin') }}
+                        </button>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+
+    {{ form_rest(configurationForm) }}
     {{ form_end(configurationForm) }}
 {% endblock %}
