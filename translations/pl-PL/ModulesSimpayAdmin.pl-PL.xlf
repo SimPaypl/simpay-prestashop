@@ -17,6 +17,16 @@
         <target>Czy na pewno chcesz odinstalować moduł? Wszystkie ustawienia zostaną utracone!</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="fe8a225ab903cfb29962f0a3f851bd14">
+        <source>A new SimPay module version (:ver) is available.</source>
+        <target>Dostępna jest nowa wersja modułu SimPay (:ver).</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9b73fd4d710e72a212bfc7dbe5692405">
+        <source>Download ZIP</source>
+        <target>Pobierz plik ZIP</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="5326bc418f9978e84b7839c7740ab74f">
         <source>IPN URL address</source>
         <target>Adres URL IPN</target>

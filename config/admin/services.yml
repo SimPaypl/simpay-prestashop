@@ -71,3 +71,8 @@ services:
       - '@prestashop.module.simpay.admin.form.simpay_form_data_provider'
       - 'SimPaypl\PrestaShop\Form\SimpayFormType'
       - 'SimpayConfiguration'
+
+  prestashop.module.simpay.update_checker:
+    class: 'SimPaypl\PrestaShop\Update\UpdateChecker'
+    arguments:
+      - '@simpay.module'

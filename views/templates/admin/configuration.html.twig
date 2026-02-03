@@ -1,6 +1,17 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
 
 {% block content %}
+    {% set updateInfo = simpay_update_info|default(configurationForm.vars.data.update_info|default(null)) %}
+
+    {% if updateInfo %}
+        <div class="alert alert-warning">
+            {{ 'A new SimPay module version (:ver) is available.'|trans({':ver': updateInfo.latest_version}, 'Modules.Simpay.Admin') }}
+            <a href="{{ updateInfo.zip_url }}" target="_blank" rel="noopener">
+                {{ 'Download ZIP'|trans({}, 'Modules.Simpay.Admin') }}
+            </a>
+        </div>
+    {% endif %}
+
     {{ form_start(configurationForm) }}
 
     <div class="row justify-content-center">

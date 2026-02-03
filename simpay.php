@@ -6,6 +6,7 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Service\Routing\Router;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
+use SimPaypl\PrestaShop\Update\UpdateChecker;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -205,16 +206,31 @@ final class Simpay extends PaymentModule
 
     public function hookDisplayBackOfficeHeader()
     {
-        if (Tools::getValue('controller') !== 'SimpayConfigurationAdminController') {
-            return;
+        $controller = Tools::getValue('controller');
+
+        if ($controller === 'SimpayConfigurationAdminController') {
+            Media::addJsDef([
+                'simpayChannelsUrl' => $this->get('router')->generate('simpay_admin_channels'),
+            ]);
+
+            $this->context->controller->addJS($this->_path . 'views/js/admin/payment-methods.js');
+            $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
         }
 
-        Media::addJsDef([
-            'simpayChannelsUrl' => $this->get('router')->generate('simpay_admin_channels'),
-        ]);
+        /** @var UpdateChecker $updateChecker */
+        $updateChecker = $this->get('prestashop.module.simpay.update_checker');
+        $update = $updateChecker->getUpdateIfAvailable();
 
-        $this->context->controller->addJS($this->_path . 'views/js/admin/payment-methods.js');
-        $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
+        if ($update && isset($this->context->controller) && in_array($controller, ['AdminModules', 'AdminModulesManage', 'AdminModulesNotifications'], true)) {
+            $msg = $this->trans(
+                'A new SimPay module version (:ver) is available.',
+                [':ver' => $update['latest_version']],
+                'Modules.Simpay.Admin'
+            );
+            $link = $this->trans('Download ZIP', [], 'Modules.Simpay.Admin');
+
+            $this->context->controller->warnings[] = $msg . ' <a href="' . htmlspecialchars($update['zip_url'], ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener">' . $link . '</a>';
+        }
     }
 
     /**
@@ -376,6 +392,10 @@ final class Simpay extends PaymentModule
 
     public function getContent(): void
     {
+        /** @var UpdateChecker $updateChecker */
+        $updateChecker = $this->get('prestashop.module.simpay.update_checker');
+        $updateChecker->getUpdateIfAvailable();
+
         /** @var Router $router */
         $route = $this->get('router')->generate('simpay_configuration');
         ToolsCore::redirectAdmin($route);
