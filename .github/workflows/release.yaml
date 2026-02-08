@@ -23,12 +23,23 @@ jobs:
 
       - name: Prepare zip package
         run: |
-          mkdir simpay
-          cp -r config controllers mails src views vendor composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
-          zip -r simpay-prestashop-${{ github.ref_name }}.zip simpay
+          set -e
+          ZIP="simpay-prestashop-${GITHUB_REF_NAME}.zip"
+          mkdir -p simpay
+          cp -r config controllers translations mails src views vendor composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
+          zip -r "${ZIP}" simpay
+          sha256sum "${ZIP}" | tee "${ZIP}.sha256"
 
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with: 
-          files: simpay-prestashop-${{ github.ref_name }}.zip
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ github.ref_name }}"
+          name: "${{ github.ref_name }}"
+          generateReleaseNotes: true
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: |
+            simpay-prestashop-${{ github.ref_name }}.zip
+            simpay-prestashop-${{ github.ref_name }}.zip.sha256
+      
 
