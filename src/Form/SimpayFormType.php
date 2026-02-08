@@ -94,6 +94,13 @@ final class SimpayFormType extends TranslatorAwareType
                 ),
                 'required' => false,
             ])
+            ->add('show_blik_in_widget', SwitchType::class, [
+                'label' => $this->trans(
+                    'Show BLIK as widget',
+                    'Modules.Simpay.Admin'
+                ),
+                'required' => false,
+            ])
             ->add('show_blik_bnpl_separately', SwitchType::class, [
                 'label' => $this->trans(
                     'Show BLIK Pay Later as an additional payment method',

@@ -22,6 +22,21 @@
         <target>Ponowienie płatności rozpoczęte przez klienta</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="c1f377ff1d794d167adf6ec87f34b7b3">
+        <source>BLIK payment initialization failed.</source>
+        <target>Próba rozpoczęcia płatności BLIK nieudana.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="43669a6958fb001372fc5593826d09f1">
+        <source>BLIK code rejected.</source>
+        <target>Kod BLIK odrzucony.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="080d86d126b0cdb32363d21108ff62af">
+        <source>BLIK code accepted.</source>
+        <target>Kod BLIK zaakceptowany.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="e84e55d186de7883e285e32fc32bfa7c">
         <source>Method not allowed</source>
         <target>Metoda niedozwolona</target>

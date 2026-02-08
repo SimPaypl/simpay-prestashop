@@ -22,6 +22,141 @@
         <target>Moduł SimPay nie jest aktywny.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="0c675d460a04acc1c5874b1a1fc6fcaf">
+        <source>Payment method is not available.</source>
+        <target>Ta metoda płatności jest niedostępna.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ff42e08d984e089372edf6647e689c61">
+        <source>BLIK widget is disabled.</source>
+        <target>Widżet płatności BLIK wyłączony.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="13ba7aaef66d439f88cd08b73ed6c09d">
+        <source>Invalid payment token.</source>
+        <target>Nieprawidłowy token płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9ecbeef1cd02154a8672c67e38d41bc0">
+        <source>Cart not found.</source>
+        <target>Nie znaleziono koszyka.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8ce4c05b5509e7cba6eb340df798d107">
+        <source>BLIK supports PLN only.</source>
+        <target>BLIK wspiera tylko walutę PLN.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7225f62716ea3488a1347e996614fe38">
+        <source>Customer not found.</source>
+        <target>Kupujący nie odnaleziony.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9cffac9c26b0066d9b6d565057cccb9a">
+        <source>Invalid BLIK code format.</source>
+        <target>Nieprawidłowy format kodu BLIK/</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="149ad34562bd32ca88aac01cd023fce5">
+        <source>Order not found.</source>
+        <target>Zamówienie nie odnalezione.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa7299bc793f358d5d11758cfa39e60a">
+        <source>We could not initialize the BLIK payment.</source>
+        <target>Nie możemy rozpocząć płatności BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d17bd1ec560039e960b13bebac10038a">
+        <source>Missing transaction ID.</source>
+        <target>Brakuje ID transakcji.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="43669a6958fb001372fc5593826d09f1">
+        <source>BLIK code rejected.</source>
+        <target>Kod BLIK odrzucony.+</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8d0de9c8115d81cdca2ba84472426f48">
+        <source>Confirm the payment in your banking app.</source>
+        <target>Potwierdź płatność w aplikacji bankowej.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b368257afff361e31bcadaa65f5183f8">
+        <source>Missing service ID.</source>
+        <target>Brakuje ID serwisu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="801e3c9c61cd7679ad2702e258efdc6e">
+        <source>BLIK request failed.</source>
+        <target>Próba płatności BLIK niepomyślna.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="350513b0393ba6e2c714b06dc22fd45a">
+        <source>Invalid BLIK code.</source>
+        <target>Nieprawidłowy kod BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f7d5521aa11a2e41de1231bc59a782ad">
+        <source>BLIK is not active in the payer’s banking app.</source>
+        <target>Metoda BLIK nie jest aktywna w banku kupującego.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b68cfd31310c5a19573056968a8806a8">
+        <source>BLIK not found in the payer’s banking app.</source>
+        <target>Nie odnaleziono BLIK w bankowości płacącego.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0cadad157b00408f76f9527517368afb">
+        <source>BLIK code expired.</source>
+        <target>Kod BLIK wygasł.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b14372fae52feb900965a005a4c79765">
+        <source>BLIK code limit exceeded.</source>
+        <target>Przekroczono limit kodu BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0c8e2b4c8ff232cb8f92c1a55d711777">
+        <source>BLIK code was cancelled.</source>
+        <target>Kod BLIK został anulowany.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fdd8ee782fa4883c56280a6edf79892d">
+        <source>BLIK code is not supported.</source>
+        <target>Kod BLIK nie jest obsługiwany.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="61ca116307127f148d49957562922105">
+        <source>BLIK code has already been used.</source>
+        <target>Kod BLIK został już użyty.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ad625f8f703cec06c87670a901f5a315">
+        <source>General BLIK error.</source>
+        <target>Ogólny błąd BLIKA.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cae683ca75d4b9052e971b08f3ef35c1">
+        <source>BLIK is temporarily unavailable due to a technical break.</source>
+        <target>BLIK jest tymczasowo niedostępny z powodu przerwy technicznej.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8d60fe641adfaedaf2faa34fdac8636c">
+        <source>Payment failed. Check the reason in the banking app and try again.</source>
+        <target>Płatność nie powiodła się. Sprawdź przyczynę w aplikacji bankowej i spróbuj ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="820e467c305860bebd198bafc05c6eca">
+        <source>Payment failed - not confirmed on time in the banking app. Try again.</source>
+        <target>Płatność nie powiodła się – nie została potwierdzona na czas w aplikacji bankowej. Spróbuj ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="98da2e4a43e18844ce5d1452c6c3f8bb">
+        <source>Payment rejected in a banking app. Try again.</source>
+        <target>Płatność odrzucona w aplikacji bankowej. Spróbuj ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="d3287dd51f6daf210fd5c49d2cb566da">
         <source>Pay with BLIK</source>
         <target>Zapłać BLIKIEM</target>
@@ -76,6 +211,66 @@
       <trans-unit id="c26aa7f4517b1f1cea5c569a0cba66c0">
         <source>Repay now</source>
         <target>Ponów płatność</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ea37f7c5bc6b5b74ea529c3d21a468d1">
+        <source>Enter the BLIK code</source>
+        <target>Wprowadź kod BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b1d7b7076307971ac244cd28d9ec205e">
+        <source>Invalid BLIK code</source>
+        <target>Nieprawidłowy kod BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1fe6aeedbf09c71e49fdaa434750631d">
+        <source>BLIK payment failed. Try again.</source>
+        <target>Płatność BLIK nie powiodła się. Spróbuj ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f493ba609d58510c9ef9696cf099fb4c">
+        <source>Processing your data, please wait.</source>
+        <target>Przetwarzanie danych, proszę czekać.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a2cb8b0aa1a3b4714bfa45c8d4e13b3d">
+        <source>Waiting for confirmation in your banking app…</source>
+        <target>Oczekiwanie na potwierdzenie w aplikacji bankowej…</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="47c4d50e5bc6d0f0c389a161e3979e12">
+        <source>Payment rejected. Please enter a new BLIK code.</source>
+        <target>Płatność odrzucona. Proszę wprowadzić nowy kod BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1bdb92826eab3367db0205859a1a761c">
+        <source>BLIK code expired. Please enter a new code.</source>
+        <target>Kod BLIK wygasł. Proszę wpisać nowy kod.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2012efd2223676acd888a4143c91d40f">
+        <source>Payment confirmed. Redirecting to order confirmation…</source>
+        <target>Płatność potwierdzona. Przekierowanie do potwierdzenia zamówienia…</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a8565b9f995c3b49a8cd0e5a8c18f632">
+        <source>Please accept the terms before continuing.</source>
+        <target>Aby kontynuować, zaakceptuj zgody.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="91d1fc4990d4fff923bde3c6c70b7e16">
+        <source>BLIK code</source>
+        <target>kod BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="10ad3658743ddcab625aaf568cfcc52d">
+        <source>You can find the BLIK code in your banking app.</source>
+        <target>Kod BLIK znajdziesz w swojej aplikacji bankowej.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="eefe56bde11b59e9d66258ea8b744b8c">
+        <source>You’ll be redirected to the secure payment gateway.</source>
+        <target>Zostaniesz przekierowany do bezpiecznej bramki płatniczej.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="0da0a5ab420b2906c2c3c593d6d78647">

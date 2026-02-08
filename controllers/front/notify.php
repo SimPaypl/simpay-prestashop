@@ -122,7 +122,10 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         $type = (string) ($payload['type'] ?? '');
         SimPayLogger::info(
             $this->trans('Webhook type received', [], 'Modules.Simpay.Logs'),
-            ['type' => $type]
+            [
+                'type' => $type,
+                'status' => $payload['data']['status'] ?? 'N/A'
+            ]
         );
 
         if ($type === 'transaction:status_changed') {
@@ -332,10 +335,10 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
     private function mapStatusToOrderState(string $status): ?int
     {
         return match ($status) {
-            'transaction_paid' => (int) Configuration::get('PS_OS_PAYMENT'),
+            'transaction_paid', 'transaction_confirmed' => (int) Configuration::get('PS_OS_PAYMENT'),
             'transaction_canceled' => (int) Configuration::get('PS_OS_CANCELED'),
-            'transaction_fraud' => (int) Configuration::get('PS_OS_ERROR'),
-            'transaction_failure', 'transaction_expired' => (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED),
+            'transaction_fraud', 'transaction_failure' => (int) Configuration::get('PS_OS_ERROR'),
+            'transaction_expired' => (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED),
             default => null,
         };
     }

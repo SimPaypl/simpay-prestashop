@@ -146,3 +146,100 @@ body#checkout .additional-information:has(.simpay-wrapper) {
     flex-direction: column;
     gap: 10px;
 }
+
+.simpay-blik-widget {
+    position: relative;
+    padding: 1rem;
+    max-width: 400px;
+    border-radius: 1rem;
+    border: 1px solid #d4d4d4;
+}
+
+.simpay-blik-widget__input {
+    height: 45px;
+    border: 1px solid #7575754f;
+    border-radius: 5px;
+    text-align: center;
+    letter-spacing: 5px;
+    color: #343434;
+}
+
+.simpay-blik-widget__input:focus {
+    outline: none;
+    border-color: #03d14e;
+    border-width: 1.5px;
+}
+
+.simpay-blik-widget__field {
+    position: relative;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.simpay-blik-widget__hint {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #06782f;
+    gap: 10px;
+    line-height: 1.3;
+    max-width: 85%;
+}
+
+.simpay-blik-widget__label {
+    box-sizing: border-box;
+    position: absolute;
+    top: -12px;
+    left: 8px;
+    padding: 0 2px;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: #757575;
+    background-color: #fff;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    z-index: 1;
+}
+
+.simpay-blik-widget__logo {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 15px;
+}
+
+.simpay-blik-widget__logo img {
+    max-width: 70px;
+}
+.simpay-blik-widget__btn {
+    background-color: #03d14e;
+    color: #fff;
+}
+
+.simpay-blik-widget__loader {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #5b5b5b;
+}
+
+.simpay-blik-widget__loader::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-top-color: #03d14e;
+    border-radius: 50%;
+    animation: simpay-spin 0.9s linear infinite;
+}
+
+.simpay-blik-widget__actions {
+    margin-top: 1rem;
+}
+
+@keyframes simpay-spin {
+    to { transform: rotate(360deg); }
+}

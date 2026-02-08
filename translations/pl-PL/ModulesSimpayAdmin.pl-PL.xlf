@@ -97,6 +97,11 @@
         <target>Wyświetl BLIK jako dodatkową metodę płatności</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="00a5a7016cfe891004cc86d64b8362df">
+        <source>Show BLIK as widget</source>
+        <target>Pokaż płatność BLIK jako widżet</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="5b6aaf8d743da023f520b1d9deb8e0d9">
         <source>Show BLIK Pay Later as an additional payment method</source>
         <target>Wyświetl BLIK Płacę Później jako dodatkową metodę płatności</target>

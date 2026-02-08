@@ -24,6 +24,7 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      * show_payment_methods_in_main: boolean,
      * payment_methods_list_in_main: string,
      * show_blik_separately: boolean,
+     * show_blik_in_widget: boolean,
      * show_blik_bnpl_separately: boolean,
      * show_paypo_separately: boolean,
      * repayment_enabled: boolean,
@@ -61,6 +62,7 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      *      show_payment_methods_in_main: boolean,
      *      payment_methods_list_in_main: string,
      *      show_blik_separately: boolean,
+     *      show_blik_in_widget: boolean,
      *      show_blik_bnpl_separately: boolean,
      *      show_paypo_separately: boolean,
      *      repayment_enabled: boolean

@@ -34,13 +34,13 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.0';
+        $this->version = '1.1.1';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
             'max' => _PS_VERSION_,
         ];
-        $this->controllers = ['failed', 'notify', 'validate', 'retry'];
+        $this->controllers = ['failed', 'notify', 'validate', 'retry', 'blik'];
 
         $this->bootstrap = true;
         parent::__construct();
@@ -190,6 +190,7 @@ final class Simpay extends PaymentModule
         if (is_string($phpSelf) && in_array($phpSelf, ['order', 'order-opc', 'order-detail', 'guest-tracking'], true)) {
             $c->addCSS($this->_path . 'views/css/front/simpay.css');
             $c->addJS($this->_path . 'views/js/front/front.js');
+            $c->addJS($this->_path . 'views/js/front/blikWidget.js');
             return;
         }
 
@@ -200,6 +201,7 @@ final class Simpay extends PaymentModule
         if ($fc === 'module' && $module === $this->name && is_string($controller)) {
             $c->addCSS($this->_path . 'views/css/front/simpay.css');
             $c->addJS($this->_path . 'views/js/front/front.js');
+            $c->addJS($this->_path . 'views/js/front/blikWidget.js');
             return;
         }
     }
@@ -267,12 +269,24 @@ final class Simpay extends PaymentModule
         $hasBlik = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_SEPARATELY);
         $hasBlikBnpl = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_BNPL_SEPARATELY);
         $hasPayPo = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYPO_SEPARATELY);
+        $showBlikInWidget = (bool) Configuration::get(SimpayDataConfiguration::SHOW_BLIK_IN_WIDGET);
 
-        if($hasBlik) {
+        if ($hasBlik) {
+            $blikType = $showBlikInWidget ? 'widget' : 'redirect';
+            $this->context->smarty->assign([
+                'blik_type' => $blikType,
+                'simpay_blik_widget_action' => $this->context->link->getModuleLink((string) $this->name, 'blik', [], true),
+                'simpay_blik_widget_cart_id' => (int) $cart->id,
+                'simpay_blik_widget_token' => Tools::getToken('simpay'),
+                'simpay_blik_widget_assets' => $this->_path,
+            ]);
+
+            $blikWidgetHtml = $this->fetch('module:' . $this->name . '/views/templates/hook/blik_widget.tpl');
+
             $methods[] = (new PaymentOption())
                 ->setModuleName($this->name)
                 ->setCallToActionText($this->trans('Pay with BLIK', [], 'Modules.Simpay.Shop'))
-                ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'blik'], true))
+                ->setAction($this->context->link->getModuleLink((string) $this->name, 'validate', ['method' => 'blik'], true))
                 ->setInputs([
                     'token' => [
                         'name' => 'token',
@@ -280,7 +294,7 @@ final class Simpay extends PaymentModule
                         'value' => Tools::getToken('simpay'),
                     ],
                 ])
-                ->setAdditionalInformation('')
+                ->setAdditionalInformation($blikWidgetHtml)
                 ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/blik.png');
         }
         if($hasBlikBnpl) {

@@ -39,19 +39,35 @@ final class SimPayApiService
     /**
      * @throws TransportExceptionInterface
      */
-        private function sendRequest(string $method, string $uri, array $options = []): ResponseInterface
-        {
-            $options = array_merge($options, ['headers' => [
-                'Authorization' => 'Bearer ' . $this->bearerToken,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-                'X-SIM-PLATFORM' => 'prestashop',
-                'X-SIM-PLATFORM-VERSION' => _PS_VERSION_,
-            ]]);
+    public function sendBlikLevel0(string $transactionId, string $blikCode): ResponseInterface
+    {
+        $uri = '/payment/' . $this->serviceId . '/blik/level0/' . rawurlencode($transactionId);
 
-            $httpClient = HttpClient::createForBaseUri('https://api.simpay.pl');
+        return $this->sendRequest('POST', $uri, [
+            'json' => [
+                'ticket' => [
+                    'T6' => $blikCode,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    private function sendRequest(string $method, string $uri, array $options = []): ResponseInterface
+    {
+        $options = array_merge($options, ['headers' => [
+            'Authorization' => 'Bearer ' . $this->bearerToken,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'X-SIM-PLATFORM' => 'prestashop',
+            'X-SIM-PLATFORM-VERSION' => _PS_VERSION_,
+        ]]);
+
+        $httpClient = HttpClient::createForBaseUri('https://api.simpay.pl');
 
 
-            return $httpClient->request($method, $uri, $options);
-        }
+        return $httpClient->request($method, $uri, $options);
+    }
 }
