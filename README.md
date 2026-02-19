@@ -225,6 +225,8 @@ Zwrot może zostać wykonany wyłącznie wtedy, gdy:
 
 Jeśli którykolwiek z warunków nie jest spełniony, moduł uniemożliwi utworzenie zwrotu.
 
+---
+
 ### Logi
 
 Zakładka **Logi** zawiera szczegółową historię zdarzeń związanych z obsługą płatności SimPay dla danego zamówienia.

@@ -72,7 +72,6 @@ final class SimPayRefundService
                 'refund_type' => pSQL($type),
                 'amount' => $this->toMinorUnits($amountValue),
                 'status' => 'refund_new',
-                'is_active' => 1,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);

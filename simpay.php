@@ -125,7 +125,7 @@ final class Simpay extends PaymentModule
         return true;
     }
 
-    private function ensureOrderState(
+    public function ensureOrderState(
         string $configurationKey,
         array $nameByLangIsoCode,
         string $color,
@@ -627,28 +627,42 @@ final class Simpay extends PaymentModule
         $refundNoticeType = null;
         $refundNoticeMessage = null;
 
-        if (Tools::isSubmit('simpay_refund_submit')) {
-            $type = (string) Tools::getValue('simpay_refund_type');
-            $amount = (float) str_replace(',', '.', (string) Tools::getValue('simpay_refund_amount'));
-
-            $result = $refundService->requestRefund($order, $type, $amount);
-            if ($result['success'] === true) {
+        if ((int) Tools::getValue('simpay_refund_done') === 1) {
+            if ((int) Tools::getValue('simpay_refund_ok') === 1) {
                 $refundNoticeType = 'success';
                 $refundNoticeMessage = $this->trans('Refund request has been accepted for processing.', [], 'Modules.Simpay.Admin');
                 $refundStatus = $this->displayConfirmation($refundNoticeMessage);
             } else {
                 $refundNoticeType = 'error';
-                $refundNoticeMessage = match ($result['code'] ?? '') {
+                $code = (string) (Tools::getValue('simpay_result_code') ?? '');
+                $msg  = (string) (Tools::getValue('simpay_result_message') ?? '');
+                $refundNoticeMessage = match ($code) {
                     'invalid_type' => $this->trans('Invalid refund type.', [], 'Modules.Simpay.Admin'),
                     'invalid_amount' => $this->trans('Invalid refund amount.', [], 'Modules.Simpay.Admin'),
                     'missing_transaction' => $this->trans('No transaction found for refund.', [], 'Modules.Simpay.Admin'),
-                    'api_error' => $this->trans('Refund request failed: :msg', [':msg' => (string) ($result['message'] ?? '')], 'Modules.Simpay.Admin'),
+                    'api_error' => $this->trans('Refund request failed: :msg', [':msg' => $msg], 'Modules.Simpay.Admin'),
                     default => $this->trans('Refund request failed.', [], 'Modules.Simpay.Admin'),
                 };
                 $refundStatus = $this->displayError($refundNoticeMessage);
             }
+        }
 
-            $refunds = $refundService->findByOrderId((int) $order->id);
+        if (Tools::isSubmit('simpay_refund_submit')) {
+            $type = (string) Tools::getValue('simpay_refund_type');
+            $amount = (float) str_replace(',', '.', (string) Tools::getValue('simpay_refund_amount'));
+
+            $result = $refundService->requestRefund($order, $type, $amount);
+
+            Tools::redirectAdmin(
+                $this->context->link->getAdminLink('AdminOrders', true, [], [
+                    'id_order' => (int) $order->id,
+                    'vieworder' => 1,
+                    'simpay_refund_done' => 1,
+                    'simpay_refund_ok' => (int) ($result['success'] === true),
+                    'simpay_result_code' => $result['code'] ?? '',
+                    'simpay_result_message' => $result['message'] ?? '',
+                ])
+            );
         }
 
         $this->context->smarty->assign([
@@ -701,7 +715,7 @@ final class Simpay extends PaymentModule
         return 'PLN' === $currencyOrder->iso_code;
     }
 
-    private function installPaymentAttemptTable(): bool
+    public function installPaymentAttemptTable(): bool
     {
         $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_payment_attempt` (
             `id_simpay_payment_attempt` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -722,7 +736,7 @@ final class Simpay extends PaymentModule
         return Db::getInstance()->execute($sql);
     }
 
-    private function installRefundsTable(): bool
+    public function installRefundsTable(): bool
     {
         $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_refunds` (
         `id_simpay_refund` VARCHAR(36) NOT NULL,
@@ -740,7 +754,7 @@ final class Simpay extends PaymentModule
         return Db::getInstance()->execute($sql);
     }
 
-    private function installPaymentLogTable(): bool
+    public function installPaymentLogTable(): bool
     {
         $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_payment_log` (
             `id_simpay_payment_log` INT UNSIGNED NOT NULL AUTO_INCREMENT,

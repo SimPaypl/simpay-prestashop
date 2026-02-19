@@ -21,7 +21,6 @@
                             type="radio"
                             name="simpay_method_choice"
                             value="{$methodId}"
-                            {if $m.id == $simpay_default_method}checked="checked"{/if}
                             required="required"
                             style="display:none"
                     >

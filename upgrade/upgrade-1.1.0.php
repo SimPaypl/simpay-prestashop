@@ -8,6 +8,38 @@ if (!defined('_PS_VERSION_')) {
 
 function upgrade_module_1_1_0($module)
 {
+    $module = Module::getInstanceByName('simpay');
+    if (!$module) {
+        PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot load module instance', 3);
+        return false;
+    }
+
+    $moduleId = (int) Module::getModuleIdByName('simpay');
+    if ($moduleId <= 0) {
+        PrestaShopLogger::addLog('[simpay][upgrade] FAIL: module id not found in DB', 3);
+        return false;
+    }
+
+    if (method_exists($module, 'ensureMailTemplate')) {
+        if (!$module->ensureMailTemplate('simpay_retry_payment')) {
+            PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install mail template', 3);
+            return false;
+        }
+    }
+
+    if (method_exists($module, 'installPaymentAttemptTable')) {
+        if (!$module->installPaymentAttemptTable()) {
+            PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install payment attempt table', 3);
+            return false;
+        }
+    }
+    if (method_exists($module, 'installPaymentLogTable')) {
+        if (!$module->installPaymentLogTable()) {
+            PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install payment log table', 3);
+            return false;
+        }
+    }
+
     $hooks = [
         'displayBackOfficeHeader',
         'displayHeader',
@@ -16,13 +48,9 @@ function upgrade_module_1_1_0($module)
         'displayAdminOrderMain',
     ];
 
-    foreach ($hooks as $hook) {
-        // Avoid duplicates / errors
-        if (!$module->isRegisteredInHook($hook)) {
-            if (!$module->registerHook($hook)) {
-                return false;
-            }
-        }
+    if (!$module->registerHook($hooks)) {
+        PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install hooks', 3);
+        return false;
     }
 
     $key = SimpayDataConfiguration::REPAYMENT_ENABLED;
@@ -35,6 +63,7 @@ function upgrade_module_1_1_0($module)
             'en' => 'Awaiting SimPay payment',
             'pl' => 'Oczekuje na płatność SimPay',
         ], '#03d14e', true)) {
+            PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install os awaiting state', 3);
             return false;
         }
 
@@ -55,6 +84,7 @@ function upgrade_module_1_1_0($module)
             true,
             'simpay_retry_payment'
         )) {
+            PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot install os expired state', 3);
             return false;
         }
 
@@ -72,26 +102,10 @@ function upgrade_module_1_1_0($module)
                         : 'Awaiting SimPay payment';
                 }
                 if (!$os->save()) {
+                    PrestaShopLogger::addLog('[simpay][upgrade] FAIL: cannot update os awaiting state', 3);
                     return false;
                 }
             }
-        }
-    }
-
-    if (method_exists($module, 'ensureMailTemplate')) {
-        if (!$module->ensureMailTemplate('simpay_retry_payment')) {
-            return false;
-        }
-    }
-
-    if (method_exists($module, 'installPaymentAttemptTable')) {
-        if (!$module->installPaymentAttemptTable()) {
-            return false;
-        }
-    }
-    if (method_exists($module, 'installPaymentLogTable')) {
-        if (!$module->installPaymentLogTable()) {
-            return false;
         }
     }
 
