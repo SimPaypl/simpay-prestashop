@@ -27,6 +27,37 @@
         <target>Pobierz plik ZIP</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="723f6c2f6df011d2aefb5ad3e599c55c">
+        <source>Refund request has been accepted for processing.</source>
+        <target>Żądanie zwrotu zostało przyjęte do realizacji.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2a43821ec21eadc4073fc65dc35d2198">
+        <source>Invalid refund type.</source>
+        <target>Nieprawidłowy typ zwrotu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4e7f26d58027e5f9611cc5fe9d901e06">
+        <source>Invalid refund amount.</source>
+        <target>Nieprawidłowa kwota zwrotu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="320faa82d56fd3717240ff4289d515a3">
+        <source>No transaction found for refund.</source>
+        <target>Nie znaleziono transakcji do zwrotu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="722c939207b0fed3562250ed32679f5e">
+        <source>Refund request failed: :msg</source>
+        <target>
+Żądanie zwrotu pieniędzy nie powiodło się: :msg</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a9fec17b0ec8695f0d6053f293e49197">
+        <source>Refund request failed.</source>
+        <target>Żądanie zwrotu pieniędzy nie powiodło się.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="5326bc418f9978e84b7839c7740ab74f">
         <source>IPN URL address</source>
         <target>Adres URL IPN</target>
@@ -127,6 +158,11 @@
         <target>Płatności</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="53beb26d8bca00f56fbd295fdee83459">
+        <source>Refunds</source>
+        <target>Zwroty</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="b2d37ae1cedf42ff874289b721860af2">
         <source>Logs</source>
         <target>Logi</target>
@@ -157,9 +193,54 @@
         <target>Aktywny</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="03c2e7e41ffc181a4e84080b4710e81e">
+        <source>New</source>
+        <target>Nowa</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e0010a0a1a3259ab5c06a19bad532851">
+        <source>Paid</source>
+        <target>Opłacone</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="205bc73c4ab4286a1fb9d4c18322777c">
+        <source>Confirmed</source>
+        <target>Potwierdzone</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0e22fe7d45f8e5632a4abf369b24e29c">
+        <source>Canceled</source>
+        <target>Anulowane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4f6f1a942dd4615c28ff5fb085719788">
+        <source>Fraud suspected</source>
+        <target>Podejrzewano oszustwo</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d7c8c85bf79bbe1b7188497c32c3b0ca">
+        <source>Failed</source>
+        <target>Nieudane</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="24fe48030f7d3097d5882535b04c3fa8">
+        <source>Expired</source>
+        <target>Wygasło</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cc61945cbbf46721a053467c395c666f">
+        <source>Refunded</source>
+        <target>Zwrócone</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="88be462393cefdff076d13eca7338ea2">
         <source>SimPay</source>
         <target>SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="88183b946cc5f0e8c96b2e66e1c74a7e">
+        <source>Unknown</source>
+        <target>Nieznany</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="93cba07454f06a4a960172bbd6e2a435">
@@ -175,6 +256,66 @@
       <trans-unit id="bba1b3ffe4e673b064fce15912a643f0">
         <source>No payment attempts.</source>
         <target>Brak prób płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1e424c220510d18ae97531f8ef9ba8a1">
+        <source>Refund type</source>
+        <target>Typ zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c0a3c3e9b5fbd21c505e082644b2220c">
+        <source>Full refund</source>
+        <target>Pełny zwrot</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="77fd2b4393b379bedd30efcd5df02090">
+        <source>Partial refund</source>
+        <target>Częściowy zwrot</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b2f40690858b404ed10e62bdf422c704">
+        <source>Amount</source>
+        <target>Kwota</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="95140cc381573ab58b0b57478014390c">
+        <source>Create refund</source>
+        <target>Stwórz zwrot</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="51c590aab3829892188e68e6b712b438">
+        <source>Select full or partial refund. Partial refunds require an amount.</source>
+        <target>Wybierz pełny lub częściowy zwrot. Częściowy zwrot wymaga podania kwoty.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a49152f05f1c38bc892d4c3530c0d18">
+        <source>Refund date</source>
+        <target>Data zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ea4ef81603749d8f4b0573ca2f926eb9">
+        <source>Refund ID</source>
+        <target>ID zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="643562a9ae7099c8aabfdc93478db117">
+        <source>Processing</source>
+        <target>Przetwarzanie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="07ca5050e697392c9ed47e6453f1453f">
+        <source>Completed</source>
+        <target>Zakończone</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d37b1f6c0512e2118cee17fea015b699">
+        <source>Rejected</source>
+        <target>Odrzucone</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="17eab8240e76f3b7adb28267fe55c2c6">
+        <source>No refund attempts.</source>
+        <target>Brak prób zwrotów płatności.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="a0db49ba470c1c9ae2128c3470339153">

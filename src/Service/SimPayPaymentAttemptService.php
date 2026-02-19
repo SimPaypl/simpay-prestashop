@@ -23,7 +23,7 @@ final class SimPayPaymentAttemptService
             'transaction_id' => pSQL($transactionId),
             'channel' => $channel ? pSQL($channel) : null,
             'payment_type' => pSQL($flowType),
-            'status' => 'initialized',
+            'status' => 'transaction_new',
             'is_active' => 1,
             'created_at' => $now,
             'updated_at' => $now,

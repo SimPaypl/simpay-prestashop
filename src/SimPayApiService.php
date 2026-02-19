@@ -55,6 +55,23 @@ final class SimPayApiService
     /**
      * @throws TransportExceptionInterface
      */
+    public function createRefund(string $transactionId, ?float $amount = null): ResponseInterface
+    {
+        $uri = '/payment/' . $this->serviceId . '/transactions/' . rawurlencode($transactionId) . '/refunds';
+
+        $options = [];
+        if ($amount !== null) {
+            $options['json'] = [
+                'amount' => $amount,
+            ];
+        }
+
+        return $this->sendRequest('POST', $uri, $options);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
     private function sendRequest(string $method, string $uri, array $options = []): ResponseInterface
     {
         $options = array_merge($options, ['headers' => [
@@ -63,6 +80,7 @@ final class SimPayApiService
             'Accept' => 'application/json',
             'X-SIM-PLATFORM' => 'prestashop',
             'X-SIM-PLATFORM-VERSION' => _PS_VERSION_,
+            'X-SIM-LOCALE' => 'pl'
         ]]);
 
         $httpClient = HttpClient::createForBaseUri('https://api.simpay.pl');

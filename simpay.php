@@ -6,6 +6,7 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Service\Routing\Router;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
+use SimPaypl\PrestaShop\Service\SimPayRefundService;
 use SimPaypl\PrestaShop\Update\UpdateChecker;
 
 if (!defined('_PS_VERSION_')) {
@@ -34,7 +35,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.1';
+        $this->version = '1.1.2';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -94,6 +95,10 @@ final class Simpay extends PaymentModule
         }
 
         if (!$this->installPaymentAttemptTable()) {
+            return false;
+        }
+
+        if (!$this->installRefundsTable()) {
             return false;
         }
 
@@ -216,6 +221,11 @@ final class Simpay extends PaymentModule
             ]);
 
             $this->context->controller->addJS($this->_path . 'views/js/admin/payment-methods.js');
+            $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
+        }
+
+        if ($controller === 'AdminOrders') {
+            $this->context->controller->addJS($this->_path . 'views/js/admin/order-main.js');
             $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
         }
 
@@ -598,27 +608,64 @@ final class Simpay extends PaymentModule
             return '';
         }
 
-        /** @var SimPayRetryPaymentService $retryService */
-        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
         /** @var SimPayPaymentAttemptService $attemptService */
         $attemptService = $this->get('prestashop.module.simpay.payment_attempt_service');
+        /** @var SimPayRefundService $refundService */
+        $refundService = $this->get('prestashop.module.simpay.refund_service');
         /** @var SimPayLogger $simpayLogger */
         $simpayLogger = $this->get('prestashop.module.simpay.payment_logger');
 
         $order = new Order((int) $params['id_order']);
-        $attempts = $attemptService->findByOrderId((int) $order->id);
-        $logs = $simpayLogger->getPaymentLogsForOrder((int) $order->id);
+        $currency = new Currency((int) $order->id_currency);
+
+        $attempts = $attemptService->findByOrderId((int) $order->id) ?? [];
+        $logs = $simpayLogger->getPaymentLogsForOrder((int) $order->id) ?? [];
+        $refunds = $refundService->findByOrderId((int) $order->id);
+        $isRefundPossible = $refundService->isRefundPossible($order);
+
+        $refundStatus = null;
+        $refundNoticeType = null;
+        $refundNoticeMessage = null;
+
+        if (Tools::isSubmit('simpay_refund_submit')) {
+            $type = (string) Tools::getValue('simpay_refund_type');
+            $amount = (float) str_replace(',', '.', (string) Tools::getValue('simpay_refund_amount'));
+
+            $result = $refundService->requestRefund($order, $type, $amount);
+            if ($result['success'] === true) {
+                $refundNoticeType = 'success';
+                $refundNoticeMessage = $this->trans('Refund request has been accepted for processing.', [], 'Modules.Simpay.Admin');
+                $refundStatus = $this->displayConfirmation($refundNoticeMessage);
+            } else {
+                $refundNoticeType = 'error';
+                $refundNoticeMessage = match ($result['code'] ?? '') {
+                    'invalid_type' => $this->trans('Invalid refund type.', [], 'Modules.Simpay.Admin'),
+                    'invalid_amount' => $this->trans('Invalid refund amount.', [], 'Modules.Simpay.Admin'),
+                    'missing_transaction' => $this->trans('No transaction found for refund.', [], 'Modules.Simpay.Admin'),
+                    'api_error' => $this->trans('Refund request failed: :msg', [':msg' => (string) ($result['message'] ?? '')], 'Modules.Simpay.Admin'),
+                    default => $this->trans('Refund request failed.', [], 'Modules.Simpay.Admin'),
+                };
+                $refundStatus = $this->displayError($refundNoticeMessage);
+            }
+
+            $refunds = $refundService->findByOrderId((int) $order->id);
+        }
 
         $this->context->smarty->assign([
-            'simpay_order' => $order,
             'simpay_attempts' => $attempts,
-            'simpay_attempts_count' => count($attempts),
-            'simpay_logs_count' => 0,
-            'simpay_retry_enabled' => (bool) Configuration::get(SimpayDataConfiguration::REPAYMENT_ENABLED),
-            'simpay_retry_url' => $retryService->getRetryUrl($order),
             'simpay_logs' => $logs,
-            'simpay_logs_count' => count($logs),
+            'simpay_refunds' => $refunds,
             'simpay_module_dir' => $this->_path,
+            'simpay_refund_action' => $this->context->link->getAdminLink('AdminOrders', true, [], [
+                'id_order' => (int) $order->id,
+                'vieworder' => 1,
+            ]),
+            'simpay_refund_status' => $refundStatus,
+            'simpay_refund_notice_type' => $refundNoticeType,
+            'simpay_refund_notice_message' => $refundNoticeMessage,
+            'simpay_currency_sign' => $currency->sign,
+            'simpay_refund_max_amount' => (float) $order->total_paid,
+            'simpay_is_refund_possible' => $isRefundPossible
         ]);
 
         return $this->fetch('module:' . $this->name . '/views/templates/admin/order/order_main.tpl');
@@ -672,6 +719,24 @@ final class Simpay extends PaymentModule
             KEY `idx_simpay_order` (`id_order`),
             KEY `idx_simpay_cart` (`id_cart`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installRefundsTable(): bool
+    {
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_refunds` (
+        `id_simpay_refund` VARCHAR(36) NOT NULL,
+        `id_order` INT UNSIGNED DEFAULT NULL,
+        `transaction_id` VARCHAR(64) NOT NULL,
+        `refund_type` VARCHAR(32) DEFAULT NULL,
+        `amount` INT DEFAULT NULL,
+        `status` VARCHAR(32) DEFAULT NULL,
+        `created_at` DATETIME NOT NULL,
+        `updated_at` DATETIME NOT NULL,
+        PRIMARY KEY (`id_simpay_refund`),
+        KEY `idx_simpay_order` (`id_order`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
+
         return Db::getInstance()->execute($sql);
     }
 

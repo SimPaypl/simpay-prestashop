@@ -19,8 +19,9 @@ Integracja jest w pełni osadzona w ścieżce zakupowej, a dodatkowo zapewnia po
     - [Metody płatności i ich kolejność](#metody-płatności-i-ich-kolejność)
     - [Tryb testowy i produkcyjny](#tryb-testowy-i-produkcyjny)
     - [Ponowienie płatności (retry)](#ponowienie-płatności-retry)
-- [Back Office – transakcje i logi](#back-office--transakcje-i-logi)
+- [Back Office – transakcje, zwroty i logi](#back-office--transakcje-i-logi)
     - [Płatności](#płatności)
+    - [Zwroty](#zwroty)
     - [Logi](#logi)
 - [Logi i diagnostyka](#logi-i-diagnostyka)
 - [Znane problemy](#znane-problemy)
@@ -42,7 +43,7 @@ Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 - mechanizm sprawdzania dostępności aktualizacji modułu (powiadomienie w Back Office + link do pobrania),
 - **płatność BLIK 0** – klient pozostaje na stronie koszyka sklepu i wpisuje 6-cyfrowy kod BLIK wygenerowany w aplikacji mobilnej banku.
 - obsługę multisklepu (multi-store) – konfiguracja modułu jest niezależna dla każdego sklepu, a ustawienia metod płatności są zapisywane osobno.
-
+- możliwość wykonywania **zwrotów pełnych i częściowych** bezpośrednio z poziomu szczegółów zamówienia w Back Office.
 
 ---
 
@@ -200,6 +201,29 @@ Dzięki temu możliwe jest szybkie sprawdzenie:
 - czy płatność została zakończona, wygasła lub nie powiodła się.
 
 ---
+
+### Zwroty
+
+Zakładka **Zwroty** wyświetla listę aktualnych zwrotów i umożliwia realizację zwrotów bezpośrednio z poziomu szczegółów zamówienia w Back Office.
+
+Zwrot można utworzyć:
+
+- jako **zwrot pełny** (całość opłaconej kwoty),
+- jako **zwrot częściowy** (dowolna kwota nieprzekraczająca dostępnego salda do zwrotu).
+
+Po utworzeniu zwrotu:
+
+- operacja jest wysyłana do API SimPay,
+- zwrot zostaje zapisany w systemie,
+- jego status jest widoczny w tej samej zakładce w liście zwrotów.
+
+Zwrot może zostać wykonany wyłącznie wtedy, gdy:
+
+- istnieje **opłacona transakcja** powiązana z zamówieniem,
+- suma wszystkich dotychczasowych zwrotów **nie przekracza wartości zamówienia**,
+- transakcja znajduje się w stanie umożliwiającym wykonanie zwrotu po stronie SimPay.
+
+Jeśli którykolwiek z warunków nie jest spełniony, moduł uniemożliwi utworzenie zwrotu.
 
 ### Logi
 

@@ -6,15 +6,24 @@ use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
 use SimPaypl\PrestaShop\Helper\SimPaySignatureValidator;
 use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
+use SimPaypl\PrestaShop\Service\SimPayRefundService;
 
 final class SimpayNotifyModuleFrontController extends ModuleFrontController
 {
     /** @var Simpay */
     public $module;
 
+    /** @var SimPayPaymentAttemptService $attemptService */
+    private $attemptService;
+
+    /** @var SimPayRefundService $refundService */
+    private $refundService;
+
     public function init(): void
     {
         parent::init();
+        $this->attemptService = $this->get('prestashop.module.simpay.payment_attempt_service');
+        $this->refundService = $this->get('prestashop.module.simpay.refund_service');
     }
 
     public function postProcess(): void
@@ -29,35 +38,40 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
 
         $raw = Tools::file_get_contents('php://input');
         $payload = json_decode($raw, true);
-        $okJson = is_array($payload);
 
-        SimPayLogger::info(
-            $this->trans('Webhook received', [], 'Modules.Simpay.Logs'),
-            ['ok_json' => $okJson]
-        );
+        if (!is_array($payload)) {
+            SimPayLogger::respond(
+                400,
+                $this->trans('Invalid JSON', [], 'Modules.Simpay.Logs'),
+                'BAD_JSON'
+            );
+        }
 
-        if ($okJson && isset($payload['data']) && is_array($payload['data'])) {
-            $cartId = (int) ($payload['data']['control'] ?? 0);
-            if ($cartId > 0) {
-                $order = Order::getByCartId($cartId);
+        $type = (string) ($payload['type'] ?? '');
+        if (isset($payload['data']) && is_array($payload['data'])) {
+            $transactionId = '';
+            if ($type === 'transaction:status_changed') {
+                $transactionId = (string) ($payload['data']['id'] ?? '');
+                $order = Order::getByCartId($payload['data']['control'] ?? 0);
+                if ($order && Validate::isLoadedObject($order)) {
+                    $this->orderId = (int) $order->id;
+                    SimPayLogger::setDefaultOrderId($this->orderId);
+                }
+            } elseif ($type === 'transaction_refund:status_changed') {
+                $transactionId = (string) ($payload['data']['transaction']['id'] ?? '');
+                $attempt = $this->attemptService->findByTransactionId($payload['data']['transaction']['id'] ?? '');
+                $order = $this->resolveOrderForAttempt($attempt);
                 if ($order && Validate::isLoadedObject($order)) {
                     $this->orderId = (int) $order->id;
                     SimPayLogger::setDefaultOrderId($this->orderId);
                 }
             }
 
-            SimPayLogger::info($this->trans('Webhook data received', [], 'Modules.Simpay.Logs'), [
-                'status' => $payload['data']['status'] ?? 'N/A',
-                'cart' => $payload['data']['control'] ?? 'N/A',
+            SimPayLogger::info($this->trans('Webhook data received from server', [], 'Modules.Simpay.Logs'), [
+                'type' => $payload['type'] ?? '',
+                'status' => $payload['data']['status'] ?? '',
+                'transaction_id' => $transactionId ?? ''
             ]);
-        }
-
-        if (!is_string($raw) || $raw === '') {
-            SimPayLogger::respond(
-                400,
-                $this->trans('Invalid payload', [], 'Modules.Simpay.Logs'),
-                'EMPTY_RAW'
-            );
         }
 
         // IP allowlist check (only log result)
@@ -91,14 +105,6 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
             );
         }
 
-        if (!$okJson) {
-            SimPayLogger::respond(
-                400,
-                $this->trans('Invalid JSON', [], 'Modules.Simpay.Logs'),
-                'BAD_JSON'
-            );
-        }
-
         if (!$this->validateRequest($payload)) {
             SimPayLogger::respond(
                 422,
@@ -120,21 +126,14 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         }
 
         $type = (string) ($payload['type'] ?? '');
-        SimPayLogger::info(
-            $this->trans('Webhook type received', [], 'Modules.Simpay.Logs'),
-            [
-                'type' => $type,
-                'status' => $payload['data']['status'] ?? 'N/A'
-            ]
-        );
-
         if ($type === 'transaction:status_changed') {
-            $data = (array) ($payload['data'] ?? []);
-            SimPayLogger::info(
-                $this->trans('Transaction status change event received', [], 'Modules.Simpay.Logs'),
-                ['status' => $data['status'] ?? 'N/A']
-            );
+            $data = $payload['data'] ?? [];
             $this->handleTransactionStatusChangedEvent($data);
+        }
+
+        if ($type === 'transaction_refund:status_changed') {
+            $data = $payload['data'] ?? [];
+            $this->handleRefundStatusChangedEvent($data);
         }
 
         SimPayLogger::respond(200, 'OK', 'DONE');
@@ -151,18 +150,8 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
             );
         }
 
-        $attemptService = new SimPayPaymentAttemptService();
-        $attempt = $attemptService->findByTransactionId($transactionId);
-
-        if (!$attempt) {
-            SimPayLogger::warning(
-                $this->trans('Unknown transaction, event ignored', [], 'Modules.Simpay.Logs'),
-                ['transaction' => $transactionId]
-            );
-            SimPayLogger::respond(200, 'OK', 'UNKNOWN_TRANSACTION');
-        }
-
-        $order = $this->resolveOrderForAttempt($attempt);
+        $attemptData = $this->attemptService->findByTransactionId($transactionId);
+        $order = $this->resolveOrderForAttempt($attemptData);
         if (!$order || !Validate::isLoadedObject($order)) {
             SimPayLogger::error(
                 $this->trans('Order not found for transaction', [], 'Modules.Simpay.Logs'),
@@ -186,13 +175,8 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         $status = (string) ($payload['status'] ?? '');
         $finalChannel = (string) ($payload['payment']['channel'] ?? '');
 
-        SimPayLogger::info(
-            $this->trans('Transaction status received', [], 'Modules.Simpay.Logs'),
-            ['status' => $status, 'transaction' => $transactionId]
-        );
-
-        if (!(bool) $attempt['is_active']) {
-            $attemptService->updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
+        if (!(bool) $attemptData['is_active']) {
+            $this->attemptService>updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
             SimPayLogger::info(
                 $this->trans('Inactive attempt, event ignored', [], 'Modules.Simpay.Logs'),
                 ['transaction' => $transactionId]
@@ -209,7 +193,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
             SimPayLogger::respond(200, 'OK', 'UNKNOWN_STATUS');
         }
 
-        if ($attempt['status'] === $status) {
+        if ($attemptData['status'] === $status) {
             SimPayLogger::info(
                 $this->trans('Duplicate status, event ignored', [], 'Modules.Simpay.Logs'),
                 ['status' => $status, 'transaction' => $transactionId]
@@ -246,7 +230,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
                 $history->add();
             }
 
-            $attemptService->updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
+            $this->attemptService->updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
 
             SimPayLogger::info(
                 $this->trans('Order status updated successfully', [], 'Modules.Simpay.Logs'),
@@ -279,6 +263,40 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
                 $context
             );
         }
+    }
+
+    private function handleRefundStatusChangedEvent(array $payload): void
+    {
+        $refundId = (string) ($payload['id'] ?? '');
+        $status = (string) ($payload['status'] ?? '');
+
+        if ($refundId === '' || $status === '') {
+            SimPayLogger::respond(
+                400,
+                $this->trans('Missing refund data', [], 'Modules.Simpay.Logs'),
+                'REFUND_MISSING_DATA'
+            );
+        }
+
+        $updated = $this->refundService->updateRefundStatus($refundId, $status);
+        if (!$updated) {
+            SimPayLogger::error(
+                $this->trans('Refund not found for transaction', [], 'Modules.Simpay.Logs'),
+                ['refund_id' => $refundId, 'status' => $status]
+            );
+            SimPayLogger::respond(
+                404,
+                $this->trans('Refund not found', [], 'Modules.Simpay.Logs'),
+                'REFUND_NOT_FOUND'
+            );
+        }
+
+        SimPayLogger::info(
+            $this->trans('Refund status updated', [], 'Modules.Simpay.Logs'),
+            ['refund_id' => $refundId, 'status' => $status]
+        );
+
+        SimPayLogger::respond(200, 'OK', 'REFUND_STATUS_UPDATED');
     }
 
     private function missingFields(array $payload): array
@@ -339,6 +357,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
             'transaction_canceled' => (int) Configuration::get('PS_OS_CANCELED'),
             'transaction_fraud', 'transaction_failure' => (int) Configuration::get('PS_OS_ERROR'),
             'transaction_expired' => (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED),
+            'transaction_refunded' => (int) Configuration::get('PS_OS_REFUND'),
             default => null,
         };
     }
@@ -351,6 +370,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
             'transaction_failure',
             'transaction_fraud',
             'transaction_expired',
+            'transaction_refunded'
         ], true);
     }
 }

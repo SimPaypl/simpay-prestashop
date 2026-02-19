@@ -38,6 +38,11 @@ services:
       - '@simpay.module'
       - '@prestashop.adapter.legacy.context'
 
+  prestashop.module.simpay.refund_service:
+    class: 'SimPaypl\PrestaShop\Service\SimPayRefundService'
+    arguments:
+      - '@prestashop.module.simpay.front.payment_client'
+
   SimPaypl\PrestaShop\Controller\SimpayConfigurationAdminController:
     arguments:
       - '@prestashop.module.simpay.admin.form.simpay_form_data_handler'

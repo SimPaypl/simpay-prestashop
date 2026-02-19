@@ -42,19 +42,14 @@
         <target>Metoda niedozwolona</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="5bf066bfdc3b46f294cf62fb9b9e8290">
-        <source>Webhook received</source>
-        <target>Otrzymano informację o zamówieniu</target>
+      <trans-unit id="5724c17391eaa0349bb92b22816f3d0f">
+        <source>Invalid JSON</source>
+        <target>Nieprawidłowy JSON</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="558368252f02a4fd38c7e40d18d28bc1">
-        <source>Webhook data received</source>
-        <target>Otrzymano dane zamówienia</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="8bc87eb582af546d32505f2839234119">
-        <source>Invalid payload</source>
-        <target>Nieprawidłowe dane</target>
+      <trans-unit id="3218fcf095985f1fea996088b5634f15">
+        <source>Webhook data received from server</source>
+        <target>Dane otrzymane z serwera</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="a6aa7b03e3a52fce8c135da0af1d6e42">
@@ -67,11 +62,6 @@
         <target>Wersja IPN nie jest obsługiwana</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="5724c17391eaa0349bb92b22816f3d0f">
-        <source>Invalid JSON</source>
-        <target>Nieprawidłowy JSON</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="d10fb60c71d2c232120f9df29cbc7989">
         <source>Validation failed</source>
         <target>Walidacja nie powiodła się</target>
@@ -82,24 +72,9 @@
         <target>Nieprawidłowa sygnatura</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="dde15f0be64ad9bd32421b8adecabdbb">
-        <source>Webhook type received</source>
-        <target>Odebrano informację o płatności</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="becd4110cc907da83031cd6e8b03ab30">
-        <source>Transaction status change event received</source>
-        <target>Otrzymano zdarzenie zmiany statusu transakcji</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="1b96cd1835267048e4bec126030b84c7">
         <source>Missing transaction id</source>
         <target>Brak identyfikatora transakcji</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="a6314ecf3e51f254c8cf9973d4a24723">
-        <source>Unknown transaction, event ignored</source>
-        <target>Nieznana transakcja, zdarzenie zignorowane</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="0fd8fb98cff194dc5057b1c65218814b">
@@ -115,11 +90,6 @@
       <trans-unit id="63796998742201ac8dba30c469a58fd5">
         <source>Order already processed, event ignored</source>
         <target>Zamówienie już przetworzone, zdarzenie zignorowane</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="1850375c84db28f397ea4dc64560e6f2">
-        <source>Transaction status received</source>
-        <target>Otrzymano status transakcji</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="f4bfcabd689c999a5fe136cde8c40005">
@@ -155,6 +125,26 @@
       <trans-unit id="eadb39cfef11844ac90ab8101cc83ed4">
         <source>Order update failed</source>
         <target>Aktualizacja zamówienia nie powiodła się</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="935fa0b94036316df3b9d80e43dce3fc">
+        <source>Missing refund data</source>
+        <target>Brak danych zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2e5e9640e6ce34e152c97648d087cd0e">
+        <source>Refund not found for transaction</source>
+        <target>Nie znaleziono zwrotu dla transakcji</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fcd95cdeb4e9315f323dc62b00ccba83">
+        <source>Refund not found</source>
+        <target>Nie znaleziono zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="99973a2b01e08f4f7a1aefccd01c97d3">
+        <source>Refund status updated</source>
+        <target>Stan zwrotu został zaktualizowany</target>
         <note>Line: </note>
       </trans-unit>
     </body>

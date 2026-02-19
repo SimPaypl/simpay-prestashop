@@ -6,3 +6,10 @@
 .list-group-item {
     cursor: pointer;
 }
+.simpay-alert {
+    position: fixed;
+    z-index: 10000;
+    min-width: 300px;
+    top: 40px;
+    right: 40px;
+}

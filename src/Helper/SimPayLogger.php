@@ -26,10 +26,6 @@ final class SimPayLogger
 
     public static function log(string $type, string $message, array $context = []): void
     {
-        if (!isset($context['id_order']) && self::$defaultOrderId) {
-            $context['id_order'] = self::$defaultOrderId;
-        }
-
         self::writeDb($type, $message, $context);
     }
 

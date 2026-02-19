@@ -26,7 +26,7 @@ jobs:
           set -e
           ZIP="simpay-prestashop-${GITHUB_REF_NAME}.zip"
           mkdir -p simpay
-          cp -r config controllers translations mails src views vendor composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
+          cp -r config controllers mails src translations upgrade views vendor composer.json composer.lock config.xml index.php LICENSE logo.png simpay.php simpay
           zip -r "${ZIP}" simpay
           sha256sum "${ZIP}" | tee "${ZIP}.sha256"
 
@@ -39,7 +39,6 @@ jobs:
           allowUpdates: true
           replacesArtifacts: true
           artifacts: |
-            simpay-prestashop-${{ github.ref_name }}.zip
-            simpay-prestashop-${{ github.ref_name }}.zip.sha256
+            simpay-prestashop.zip
       
 

@@ -142,7 +142,6 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         SimPayLogger::setDefaultOrderId((int) $order->id);
         SimPayLogger::info($this->trans('Order payment started', [], 'Modules.Simpay.Logs'), [
-            'id_order' => (int) $order->id,
             'transaction_id' => $transactionId,
             'flow' => $this->isRetryFlow
                 ? $this->trans('Repayment', [], 'Modules.Simpay.Logs')
