@@ -23,10 +23,9 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      * service_ipn_signature_key: string,
      * show_payment_methods_in_main: boolean,
      * payment_methods_list_in_main: string,
-     * show_blik_separately: boolean,
+     * show_separate_payment_methods: boolean,
+     * separate_payment_methods_list: string,
      * show_blik_in_widget: boolean,
-     * show_blik_bnpl_separately: boolean,
-     * show_paypo_separately: boolean,
      * repayment_enabled: boolean,
      * update_info: ?array
      * }
@@ -61,10 +60,9 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      *      service_ipn_signature_key: string,
      *      show_payment_methods_in_main: boolean,
      *      payment_methods_list_in_main: string,
-     *      show_blik_separately: boolean,
+     *      show_separate_payment_methods: boolean,
+     *      separate_payment_methods_list: string,
      *      show_blik_in_widget: boolean,
-     *      show_blik_bnpl_separately: boolean,
-     *      show_paypo_separately: boolean,
      *      repayment_enabled: boolean
      *   } $data
      * @return array<string>

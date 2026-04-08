@@ -47,11 +47,11 @@
                 <div class="card-body">
                     <div class="form-wrapper">
                         {{ form_row(configurationForm.show_payment_methods_in_main) }}
+                        {{ form_widget(configurationForm.payment_methods_list_in_main) }}
+                        {{ form_row(configurationForm.show_separate_payment_methods) }}
+                        {{ form_widget(configurationForm.separate_payment_methods_list) }}
                         {% include '@Modules/simpay/views/templates/admin/config/_payment_methods_block.html.twig' %}
-                        {{ form_row(configurationForm.show_blik_separately) }}
                         {{ form_row(configurationForm.show_blik_in_widget) }}
-                        {{ form_row(configurationForm.show_blik_bnpl_separately) }}
-                        {{ form_row(configurationForm.show_paypo_separately) }}
                         {{ form_row(configurationForm.repayment_enabled) }}
                     </div>
                 </div>

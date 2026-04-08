@@ -35,7 +35,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.2';
+        $this->version = '1.1.3';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -276,73 +276,62 @@ final class Simpay extends PaymentModule
         $methods = [];
 
         $showPaymentMethods = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYMENT_METHODS_IN_MAIN);
-        $hasBlik = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_SEPARATELY);
-        $hasBlikBnpl = (bool)Configuration::get(SimpayDataConfiguration::SHOW_BLIK_BNPL_SEPARATELY);
-        $hasPayPo = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYPO_SEPARATELY);
+        $showSeparateMethods = (bool) Configuration::get(SimpayDataConfiguration::SHOW_SEPARATE_PAYMENT_METHODS);
         $showBlikInWidget = (bool) Configuration::get(SimpayDataConfiguration::SHOW_BLIK_IN_WIDGET);
+        $token = Tools::getToken('simpay');
+        $cartTotalWithShipping = (float) $cart->getOrderTotal(true, Cart::BOTH);
 
-        if ($hasBlik) {
-            $blikType = $showBlikInWidget ? 'widget' : 'redirect';
-            $this->context->smarty->assign([
-                'blik_type' => $blikType,
-                'simpay_blik_widget_action' => $this->context->link->getModuleLink((string) $this->name, 'blik', [], true),
-                'simpay_blik_widget_cart_id' => (int) $cart->id,
-                'simpay_blik_widget_token' => Tools::getToken('simpay'),
-                'simpay_blik_widget_assets' => $this->_path,
-            ]);
+        if ($showSeparateMethods) {
+            foreach ($this->getCheckoutSeparateMethodsToDisplay($cartTotalWithShipping) as $method) {
+                $methodId = (string) ($method['id'] ?? '');
+                if ($methodId === '') {
+                    continue;
+                }
 
-            $blikWidgetHtml = $this->fetch('module:' . $this->name . '/views/templates/hook/blik_widget.tpl');
+                $methodName = (string) ($method['name'] ?? $methodId);
+                $callToAction = $this->trans('Pay with %method%', ['%method%' => $methodName], 'Modules.Simpay.Shop');
+                $additionalInformation = '';
+                $logo = isset($method['img']) ? (string) $method['img'] : null;
 
-            $methods[] = (new PaymentOption())
-                ->setModuleName($this->name)
-                ->setCallToActionText($this->trans('Pay with BLIK', [], 'Modules.Simpay.Shop'))
-                ->setAction($this->context->link->getModuleLink((string) $this->name, 'validate', ['method' => 'blik'], true))
-                ->setInputs([
-                    'token' => [
-                        'name' => 'token',
-                        'type' => 'hidden',
-                        'value' => Tools::getToken('simpay'),
-                    ],
-                ])
-                ->setAdditionalInformation($blikWidgetHtml)
-                ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/blik.png');
-        }
-        if($hasBlikBnpl) {
-            $methods[] = (new PaymentOption())
-                ->setModuleName($this->name)
-                ->setCallToActionText($this->trans('BLIK Pay Later', [], 'Modules.Simpay.Shop'))
-                ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'blik-paylater'], true))
-                ->setInputs([
-                    'token' => [
-                        'name' => 'token',
-                        'type' => 'hidden',
-                        'value' => Tools::getToken('simpay'),
-                    ],
-                ])
-                ->setAdditionalInformation($this->trans('Learn more at <a href=":url" target="_blank">:url</a>', ['url' => 'https://www.blik.com/place-pozniej'], 'Modules.Simpay.Shop'))
-                ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/blik_paylater.png');
-        }
-        if($hasPayPo) {
-            $methods[] = (new PaymentOption())
-                ->setModuleName($this->name)
-                ->setCallToActionText($this->trans('PayPo – Buy now, pay later', [], 'Modules.Simpay.Shop'))
-                ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', ['method'=>'paypo'], true))
-                ->setInputs([
-                    'token' => [
-                        'name' => 'token',
-                        'type' => 'hidden',
-                        'value' => Tools::getToken('simpay'),
-                    ],
-                ])
-                ->setAdditionalInformation($this->trans('Learn more at <a href=":url" target="_blank">paypo.pl</a>', ['url' => 'https://start.paypo.pl/'], 'Modules.Simpay.Shop'))
-                ->setLogo('https://cdn.simpay.pl/ecommerce/payment_providers/paypo.png');
+                if ($methodId === 'blik' && $showBlikInWidget) {
+                    $this->context->smarty->assign([
+                        'blik_type' => 'widget',
+                        'simpay_blik_widget_action' => $this->context->link->getModuleLink((string) $this->name, 'blik', [], true),
+                        'simpay_blik_widget_cart_id' => (int) $cart->id,
+                        'simpay_blik_widget_token' => $token,
+                        'simpay_blik_widget_assets' => $this->_path,
+                    ]);
+                    $additionalInformation = $this->fetch('module:' . $this->name . '/views/templates/hook/blik_widget.tpl');
+                }
+
+                $paymentOption = (new PaymentOption())
+                    ->setModuleName($this->name)
+                    ->setCallToActionText($callToAction)
+                    ->setAction($this->context->link->getModuleLink((string) $this->name, 'validate', ['method' => $methodId], true))
+                    ->setInputs([
+                        'token' => [
+                            'name' => 'token',
+                            'type' => 'hidden',
+                            'value' => $token,
+                        ],
+                    ]);
+
+                if ($additionalInformation !== '') {
+                    $paymentOption->setAdditionalInformation($additionalInformation);
+                }
+                if ($logo !== null && $logo !== '') {
+                    $paymentOption->setLogo($logo);
+                }
+
+                $methods[] = $paymentOption;
+            }
         }
 
         $this->context->smarty->assign([
-            'simpay_methods' => $this->getCheckoutMethodsGridToDisplay(),
+            'simpay_methods' => $this->getCheckoutMethodsGridToDisplay($cartTotalWithShipping),
             'simpay_module_name' => $this->name,
             'simpay_action' => $this->context->link->getModuleLink($this->name, 'validate', [], true),
-            'simpay_token' => Tools::getToken('simpay'),
+            'simpay_token' => $token,
             'simpay_show_methods' => $showPaymentMethods
         ]);
 
@@ -370,10 +359,10 @@ final class Simpay extends PaymentModule
      * Build a safe list of methods to display in checkout
      * @return array<int, array{id:string,name:string,type:string,img:?string}>
      */
-    private function getCheckoutMethodsGridToDisplay(): array
+    private function getCheckoutMethodsGridToDisplay(float $cartTotalWithShipping): array
     {
         // Selected in admin
-        $raw = (string) Configuration::get('SIMPAY_PAYMENT_METHODS_LIST_IN_MAIN');
+        $raw = (string) Configuration::get(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN);
         $selected = $raw !== '' ? json_decode($raw, true) : [];
         if (!is_array($selected)) {
             $selected = [];
@@ -395,6 +384,9 @@ final class Simpay extends PaymentModule
             if (!isset($ch['id'])) {
                 continue;
             }
+            if (!$this->isMethodInAmountRange($ch, $cartTotalWithShipping)) {
+                continue;
+            }
             $availableById[(string) $ch['id']] = $ch;
         }
 
@@ -412,6 +404,99 @@ final class Simpay extends PaymentModule
         }
 
         return $methods;
+    }
+
+    /**
+     * @return array<int, array{id:string,name:string,type:string,img:?string}>
+     */
+    private function getCheckoutSeparateMethodsToDisplay(float $cartTotalWithShipping): array
+    {
+        $raw = (string) Configuration::get(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST);
+        $selected = $raw !== '' ? json_decode($raw, true) : [];
+        if (!is_array($selected) || empty($selected)) {
+            return [];
+        }
+
+        /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $cache */
+        $cache = $this->get('prestashop.module.simpay.channel_cache');
+        $available = $cache->get();
+
+        if (empty($available)) {
+            return [];
+        }
+
+        $availableById = [];
+        foreach ($available as $channel) {
+            if (!isset($channel['id'])) {
+                continue;
+            }
+
+            // transfer should not be displayed as a standalone option
+            if (($channel['id'] ?? '') === 'transfer' || ($channel['type'] ?? '') === 'transfer') {
+                continue;
+            }
+            if (!$this->isMethodInAmountRange($channel, $cartTotalWithShipping)) {
+                continue;
+            }
+
+            $availableById[(string) $channel['id']] = $channel;
+        }
+
+        $methods = [];
+        foreach (array_keys($selected) as $id) {
+            $id = (string) $id;
+            if (isset($availableById[$id])) {
+                $methods[] = $availableById[$id];
+            }
+        }
+
+        return $methods;
+    }
+
+    /**
+     * @param array{id?:mixed,amounts?:mixed} $method
+     */
+    private function isMethodInAmountRange(array $method, float $cartTotalWithShipping): bool
+    {
+        $amounts = isset($method['amounts']) && is_array($method['amounts']) ? $method['amounts'] : [];
+
+        $min = $this->parseMethodAmountLimit($amounts, 'min');
+        $max = $this->parseMethodAmountLimit($amounts, 'max');
+
+        if ($min !== null && $cartTotalWithShipping < $min) {
+            return false;
+        }
+
+        if ($max !== null && $cartTotalWithShipping > $max) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, mixed> $amounts
+     */
+    private function parseMethodAmountLimit(array $amounts, string $key): ?float
+    {
+        if (!isset($amounts[$key])) {
+            return null;
+        }
+
+        $value = $amounts[$key];
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = str_replace(',', '.', trim($value));
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
     }
 
     public function getContent(): void

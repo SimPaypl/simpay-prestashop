@@ -10,6 +10,7 @@ use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayChannelCache;
 
 final class SimpayConfigurationAdminController extends FrameworkBundleAdminController
@@ -44,8 +45,10 @@ final class SimpayConfigurationAdminController extends FrameworkBundleAdminContr
 
         return $this->render('@Modules/simpay/views/templates/admin/configuration.html.twig', [
             'configurationForm' => $configurationForm->createView(),
-            'selectedMethods' => $this->getActiveSelectedChannels(),
-            'availableMethods' => $this->getActiveAvailableChannels(),
+            'selectedMethodsMain' => $this->getActiveSelectedChannelsByConfig(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN),
+            'availableMethodsMain' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN),
+            'selectedMethodsSeparate' => $this->getActiveSelectedChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, false, true),
+            'availableMethodsSeparate' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, false, true),
         ]);
     }
 
@@ -60,16 +63,18 @@ final class SimpayConfigurationAdminController extends FrameworkBundleAdminContr
         return $this->json([
             'success' => true,
             'data' => [
-                'available' => $this->getActiveAvailableChannels($force), // [{id,name,type,img}]
-                'selected'  => $this->getActiveSelectedChannels($force),  // map id=>name
+                'available_main' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN, $force),
+                'selected_main'  => $this->getActiveSelectedChannelsByConfig(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN, $force),
+                'available_separate' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, $force, true),
+                'selected_separate'  => $this->getActiveSelectedChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, $force, true),
             ],
         ]);
     }
 
-    private function getActiveSelectedChannels(bool $force = false): array
+    private function getActiveSelectedChannelsByConfig(string $configurationKey, bool $force = false, bool $excludeTransfers = false): array
     {
         // selected map from config: id => name
-        $raw = (string) Configuration::get('SIMPAY_PAYMENT_METHODS_LIST_IN_MAIN');
+        $raw = (string) Configuration::get($configurationKey);
         $selected = $raw !== '' ? json_decode($raw, true) : [];
 
         if (!is_array($selected) || empty($selected)) {
@@ -81,6 +86,9 @@ final class SimpayConfigurationAdminController extends FrameworkBundleAdminContr
 
         $activeIds = [];
         foreach ($cachedChannels as $ch) {
+            if ($excludeTransfers && !$this->isAllowedSeparateChannel($ch)) {
+                continue;
+            }
             if (!empty($ch['id'])) {
                 $activeIds[(string) $ch['id']] = true;
             }
@@ -97,17 +105,26 @@ final class SimpayConfigurationAdminController extends FrameworkBundleAdminContr
         return $filtered; // id => name
     }
 
-    private function getActiveAvailableChannels(bool $force = false): array
+    private function getActiveAvailableChannelsByConfig(string $configurationKey, bool $force = false, bool $excludeTransfers = false): array
     {
-        $selected = $this->getActiveSelectedChannels($force);
+        $selected = $this->getActiveSelectedChannelsByConfig($configurationKey, $force, $excludeTransfers);
         $selectedIds = array_keys($selected);
 
         $cachedChannels = $this->simPayChannelCache->get($force);
 
-        return array_values(array_filter($cachedChannels, function (array $ch) use ($selectedIds) {
+        return array_values(array_filter($cachedChannels, function (array $ch) use ($selectedIds, $excludeTransfers) {
+            if ($excludeTransfers && !$this->isAllowedSeparateChannel($ch)) {
+                return false;
+            }
+
             $id = $ch['id'] ?? null;
             return $id && !in_array((string) $id, $selectedIds, true);
         }));
+    }
+
+    private function isAllowedSeparateChannel(array $channel): bool
+    {
+        return (($channel['id'] ?? '') !== 'transfer') && (($channel['type'] ?? '') !== 'transfer');
     }
 
 }

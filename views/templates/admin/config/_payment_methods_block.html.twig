@@ -1,45 +1,82 @@
-
-<div id="simpay-methods-block" class="form-group row d-none">
+<div id="simpay-methods-shared-info" class="d-none">
     <div class="alert alert-info w-100">
         {{ 'If the payment method you are looking for is not available, you can add and activate it in the SimPay panel in the "Payment channels" section.'|trans({}, 'Modules.Simpay.Admin') }}
     </div>
-    <label class="form-control-label" for="form_show_payment_methods_in_main">{{ 'Payment methods list'|trans({}, 'Modules.Simpay.Admin') }}</label>
+</div>
+
+<div id="simpay-separate-methods-block" class="form-group row d-none">
+    <label class="form-control-label" for="form_show_separate_payment_methods">{{ 'Payment methods shown as separate payment options'|trans({}, 'Modules.Simpay.Admin') }}</label>
     <div class="col-sm">
+        <div class="alert alert-warning">
+            {{ 'The transfer channel is excluded from separate payment options.'|trans({}, 'Modules.Simpay.Admin') }}
+        </div>
         <div class="row mb-3 align-items-stretch">
             <div class="col-md-6">
                 <h4 class="h5">{{ 'All payment methods'|trans({}, 'Modules.Simpay.Admin') }}</h4>
-                <ul id="simpay-all-methods" class="list-group simpay-sortable">
-                    {% for method in availableMethods %}
+                <ul id="simpay-all-methods-separate" class="list-group simpay-sortable-separate">
+                    {% for method in availableMethodsSeparate|default([]) %}
                         <li class="list-group-item d-flex justify-content-between align-items-center" data-name="{{ method.name }}" data-id="{{ method.id }}">
                             <span>{{ method.name }}</span>
                             <i class="material-icons text-muted">drag_indicator</i>
                         </li>
-
                     {% endfor %}
                 </ul>
             </div>
 
             <div class="col-md-6">
                 <h4 class="h5">{{ 'Selected methods'|trans({}, 'Modules.Simpay.Admin') }}</h4>
-                <ul id="simpay-selected-methods" class="list-group simpay-sortable">
-                    {% for id, name in selectedMethods %}
+                <ul id="simpay-selected-methods-separate" class="list-group simpay-sortable-separate">
+                    {% for id, name in selectedMethodsSeparate|default([]) %}
                         <li class="list-group-item d-flex justify-content-between align-items-center" data-name="{{ name|e('html_attr') }}" data-id="{{ id|e('html_attr') }}">
                             <span>{{ name|e('html_attr') }}</span>
                             <i class="material-icons text-muted">drag_indicator</i>
                         </li>
-
                     {% endfor %}
                 </ul>
             </div>
         </div>
-        <button
-                type="button"
-                class="btn btn-outline-primary btn-sm"
-                id="simpay-refresh-channels"
-        >
-            <i class="material-icons" style="font-size:18px; vertical-align:middle;">refresh</i>
-            {{ 'Refresh channels'|trans({}, 'Modules.Simpay.Admin') }}
-        </button>
-        <small class="form-text">{{ 'Drag and drop payment methods to change their order.'|trans({}, 'Modules.Simpay.Admin') }}</small>
     </div>
+</div>
+
+<div id="simpay-main-methods-block" class="form-group row d-none">
+    <label class="form-control-label" for="form_show_payment_methods_in_main">{{ 'Payment methods list in main SimPay option'|trans({}, 'Modules.Simpay.Admin') }}</label>
+    <div class="col-sm">
+        <div class="row mb-3 align-items-stretch">
+            <div class="col-md-6">
+                <h4 class="h5">{{ 'All payment methods'|trans({}, 'Modules.Simpay.Admin') }}</h4>
+                <ul id="simpay-all-methods-main" class="list-group simpay-sortable-main">
+                    {% for method in availableMethodsMain|default([]) %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center" data-name="{{ method.name }}" data-id="{{ method.id }}">
+                            <span>{{ method.name }}</span>
+                            <i class="material-icons text-muted">drag_indicator</i>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col-md-6">
+                <h4 class="h5">{{ 'Selected methods'|trans({}, 'Modules.Simpay.Admin') }}</h4>
+                <ul id="simpay-selected-methods-main" class="list-group simpay-sortable-main">
+                    {% for id, name in selectedMethodsMain|default([]) %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center" data-name="{{ name|e('html_attr') }}" data-id="{{ id|e('html_attr') }}">
+                            <span>{{ name|e('html_attr') }}</span>
+                            <i class="material-icons text-muted">drag_indicator</i>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="simpay-methods-footer" class="d-none">
+    <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            id="simpay-refresh-channels"
+    >
+        <i class="material-icons" style="font-size:18px; vertical-align:middle;">refresh</i>
+        {{ 'Refresh channels'|trans({}, 'Modules.Simpay.Admin') }}
+    </button>
+    <small class="form-text">{{ 'Drag and drop payment methods to change their order.'|trans({}, 'Modules.Simpay.Admin') }}</small>
 </div>

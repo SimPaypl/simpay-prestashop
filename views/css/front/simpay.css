@@ -1,6 +1,7 @@
 .payment-option img[src*=simpay] {
     margin-left: .5rem;
     max-width: 90px;
+    max-height: 30px;
 }
 
 body#checkout .additional-information:has(.simpay-wrapper) {

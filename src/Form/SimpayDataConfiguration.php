@@ -14,10 +14,9 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const SERVICE_IPN_SIGNATURE_KEY = 'SIMPAY_SERVICE_IPN_SIGNATURE_KEY';
     public const SHOW_PAYMENT_METHODS_IN_MAIN = 'SIMPAY_SHOW_PAYMENT_METHODS_IN_MAIN';
     public const PAYMENT_METHODS_LIST_IN_MAIN = 'SIMPAY_PAYMENT_METHODS_LIST_IN_MAIN';
-    public const SHOW_BLIK_SEPARATELY = 'SIMPAY_SHOW_BLIK_SEPARATELY';
+    public const SHOW_SEPARATE_PAYMENT_METHODS = 'SIMPAY_SHOW_SEPARATE_PAYMENT_METHODS';
+    public const SEPARATE_PAYMENT_METHODS_LIST = 'SIMPAY_SEPARATE_PAYMENT_METHODS_LIST';
     public const SHOW_BLIK_IN_WIDGET = 'SIMPAY_SHOW_BLIK_IN_WIDGET';
-    public const SHOW_BLIK_BNPL_SEPARATELY = 'SIMPAY_SHOW_BLIK_BNPL_SEPARATELY';
-    public const SHOW_PAYPO_SEPARATELY = 'SIMPAY_SHOW_PAYPO_SEPARATELY';
     public const IPN_CHECK_IP = 'SIMPAY_IPN_CHECK_IP';
     public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
 
@@ -34,10 +33,9 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     service_ipn_signature_key: string,
      *     show_payment_methods_in_main: boolean,
      *     payment_methods_list_in_main: string,
-     *     show_blik_separately: boolean,
+     *     show_separate_payment_methods: boolean,
+     *     separate_payment_methods_list: string,
      *     show_blik_in_widget: boolean,
-     *     show_blik_bnpl_separately: boolean,
-     *     show_paypo_separately: boolean,
      *     ipn_check_ip: boolean,
      *     repayment_enabled: boolean
      *  }
@@ -50,10 +48,9 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'service_ipn_signature_key' => (string)$this->configuration->get(self::SERVICE_IPN_SIGNATURE_KEY),
             'show_payment_methods_in_main' => (bool)$this->configuration->get(self::SHOW_PAYMENT_METHODS_IN_MAIN),
             'payment_methods_list_in_main' => (string)$this->configuration->get(self::PAYMENT_METHODS_LIST_IN_MAIN),
-            'show_blik_separately' => (bool)$this->configuration->get(self::SHOW_BLIK_SEPARATELY),
+            'show_separate_payment_methods' => (bool)$this->configuration->get(self::SHOW_SEPARATE_PAYMENT_METHODS),
+            'separate_payment_methods_list' => (string)$this->configuration->get(self::SEPARATE_PAYMENT_METHODS_LIST),
             'show_blik_in_widget' => (bool)$this->configuration->get(self::SHOW_BLIK_IN_WIDGET),
-            'show_blik_bnpl_separately' => (bool)$this->configuration->get(self::SHOW_BLIK_BNPL_SEPARATELY),
-            'show_paypo_separately' => (bool)$this->configuration->get(self::SHOW_PAYPO_SEPARATELY),
             'ipn_check_ip' => (bool)$this->configuration->get(self::IPN_CHECK_IP),
             'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
         ];
@@ -66,10 +63,9 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     service_ipn_signature_key: string,
      *     show_payment_methods_in_main: boolean,
      *     payment_methods_list_in_main: string,
-     *     show_blik_separately: boolean,
+     *     show_separate_payment_methods: boolean,
+     *     separate_payment_methods_list: string,
      *     show_blik_in_widget: boolean,
-     *     show_blik_bnpl_separately: boolean,
-     *     show_paypo_separately: boolean,
      *     ipn_check_ip: boolean,
      *     repayment_enabled: boolean
      * } $configuration
@@ -86,10 +82,9 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::SERVICE_IPN_SIGNATURE_KEY, $configuration['service_ipn_signature_key']);
         $this->configuration->set(self::SHOW_PAYMENT_METHODS_IN_MAIN, $configuration['show_payment_methods_in_main']);
         $this->configuration->set(self::PAYMENT_METHODS_LIST_IN_MAIN, $configuration['payment_methods_list_in_main']);
-        $this->configuration->set(self::SHOW_BLIK_SEPARATELY, $configuration['show_blik_separately']);
+        $this->configuration->set(self::SHOW_SEPARATE_PAYMENT_METHODS, $configuration['show_separate_payment_methods']);
+        $this->configuration->set(self::SEPARATE_PAYMENT_METHODS_LIST, $configuration['separate_payment_methods_list']);
         $this->configuration->set(self::SHOW_BLIK_IN_WIDGET, $configuration['show_blik_in_widget']);
-        $this->configuration->set(self::SHOW_BLIK_BNPL_SEPARATELY, $configuration['show_blik_bnpl_separately']);
-        $this->configuration->set(self::SHOW_PAYPO_SEPARATELY, $configuration['show_paypo_separately']);
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
         $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
         return [];
@@ -104,10 +99,10 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             && isset($configuration['service_id'])
             && isset($configuration['service_ipn_signature_key'])
             && isset($configuration['show_payment_methods_in_main'])
-            && isset($configuration['show_blik_separately'])
+            && isset($configuration['payment_methods_list_in_main'])
+            && isset($configuration['show_separate_payment_methods'])
+            && isset($configuration['separate_payment_methods_list'])
             && isset($configuration['show_blik_in_widget'])
-            && isset($configuration['show_blik_bnpl_separately'])
-            && isset($configuration['show_paypo_separately'])
             && isset($configuration['ipn_check_ip'])
             && isset($configuration['repayment_enabled']);
     }

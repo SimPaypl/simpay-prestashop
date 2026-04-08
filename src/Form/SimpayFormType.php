@@ -87,30 +87,26 @@ final class SimpayFormType extends TranslatorAwareType
                     'Modules.Simpay.Admin'
                 )
             ])
-            ->add('show_blik_separately', SwitchType::class, [
+            ->add('show_separate_payment_methods', SwitchType::class, [
                 'label' => $this->trans(
-                    'Show BLIK as an additional payment method',
+                    'Show selected payment methods as separate payment options',
+                    'Modules.Simpay.Admin'
+                ),
+                'help' => $this->trans(
+                    'When enabled, selected methods will be displayed as additional standalone payment options in checkout.',
                     'Modules.Simpay.Admin'
                 ),
                 'required' => false,
+            ])
+            ->add('separate_payment_methods_list', HiddenType::class, [
+                'label' => $this->trans(
+                    'List of payment methods shown as separate options',
+                    'Modules.Simpay.Admin'
+                )
             ])
             ->add('show_blik_in_widget', SwitchType::class, [
                 'label' => $this->trans(
                     'Show BLIK as widget',
-                    'Modules.Simpay.Admin'
-                ),
-                'required' => false,
-            ])
-            ->add('show_blik_bnpl_separately', SwitchType::class, [
-                'label' => $this->trans(
-                    'Show BLIK Pay Later as an additional payment method',
-                    'Modules.Simpay.Admin'
-                ),
-                'required' => false,
-            ])
-            ->add('show_paypo_separately', SwitchType::class, [
-                'label' => $this->trans(
-                    'Show PayPo as an additional payment method',
                     'Modules.Simpay.Admin'
                 ),
                 'required' => false,

@@ -36,6 +36,8 @@ Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 - płatności osadzone w ścieżce zamówienia (checkout),
 - prezentację dostępnych metod płatności w sklepie,
 - możliwość **włączania i wyłączania metod płatności** oraz ustawiania ich kolejności,
+- konfigurację dwóch niezależnych list metod: w ramach głównej płatności SimPay oraz jako osobne metody płatności,
+- automatyczne ukrywanie metod niedostępnych dla aktualnej kwoty koszyka (limity `min`/`max` kanału),
 - tryb **testowy** i **produkcyjny**,
 - system logów i narzędzi diagnostycznych,
 - **podgląd statusu wszystkich transakcji powiązanych z zamówieniem** w panelu administracyjnym (Back Office),
@@ -125,23 +127,32 @@ Moduł umożliwia pełną kontrolę nad metodami płatności wyświetlanymi klie
 
 W konfiguracji możesz:
 
-- włączyć lub wyłączyć wyświetlanie metod płatności SimPay w sklepie,
-- wybierać, które metody płatności mają być dostępne dla klientów,
+- włączyć lub wyłączyć wyświetlanie metod w ramach głównej opcji SimPay,
+- włączyć lub wyłączyć wyświetlanie wybranych metod jako **osobne opcje płatności**,
+- wybierać, które metody mają być widoczne w każdej z tych sekcji,
 - ustalać **kolejność metod płatności metodą „przeciągnij i upuść” (drag & drop)**,
 - odświeżyć listę kanałów płatności pobieraną z panelu SimPay.
 
-Konfiguracja odbywa się za pomocą dwóch list:
+Konfiguracja odbywa się w dwóch niezależnych blokach:
+
+1. **Metody płatności w ramach głównej opcji SimPay**
+2. **Metody płatności wyświetlane jako osobne opcje**
+
+W każdym bloku dostępne są dwie listy:
 - **Wszystkie metody płatności** – lista metod dostępnych w SimPay,
 - **Wybrane metody** – metody, które będą widoczne dla klientów w sklepie.
 
+Listy są widoczne dopiero po włączeniu odpowiedniego przełącznika dla danego bloku.
+
 Jeśli dana metoda płatności nie jest dostępna na liście, należy dodać ją i aktywować w panelu SimPay w sekcji **Kanały płatności**.
 
-Dodatkowo moduł pozwala na niezależne sterowanie wybranymi metodami:
+W sekcji osobnych metod kanał **transfer** jest celowo wykluczony i nie może być dodany jako odrębna metoda.
 
-- wyświetlanie **BLIK** jako dodatkowej metody płatności,
+Dodatkowo, metody płatności są automatycznie filtrowane w checkout na podstawie wartości koszyka (z dostawą) i limitów kanału `amounts.min` / `amounts.max`.
+
+Dodatkowo moduł pozwala na:
+
 - wyświetlanie **BLIK** w formie widżetu,
-- wyświetlanie **BLIK Płacę Później** jako osobnej metody,
-- wyświetlanie **PayPo** jako osobnej metody płatności,
 - włączanie lub wyłączanie **ponawiania płatności**.
 
 ---

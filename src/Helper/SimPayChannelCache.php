@@ -155,8 +155,9 @@ final class SimPayChannelCache
             $id = $c['id'] ?? null;
             $name = $c['name'] ?? null;
             $type = $c['type'] ?? null;
+            $amounts = $c['amount'] ?? null;
 
-            if (!$id || !$name || !$type) {
+            if (!$id || !$name || !$type || !$amounts) {
                 continue;
             }
 
@@ -169,6 +170,7 @@ final class SimPayChannelCache
                 'name' => (string) $name,
                 'type' => (string) $type,
                 'img' => isset($c['img']) ? (string) $c['img'] : null,
+                'amounts' => (array) $amounts,
             ];
         }
 

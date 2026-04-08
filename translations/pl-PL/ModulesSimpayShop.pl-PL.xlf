@@ -157,29 +157,9 @@
         <target>Płatność odrzucona w aplikacji bankowej. Spróbuj ponownie.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="d3287dd51f6daf210fd5c49d2cb566da">
-        <source>Pay with BLIK</source>
-        <target>Zapłać BLIKIEM</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="9f233de11017582ab42e24e0dd2cea51">
-        <source>BLIK Pay Later</source>
-        <target>BLIK Płacę Później</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="7e6afd2ccbff374aaefc8ca6676d1d11">
-        <source><![CDATA[Learn more at <a href=":url" target="_blank">:url</a>]]></source>
-        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">:url</a>]]></target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="3afd983fc0ed0cab779eddcbed5accbe">
-        <source>PayPo – Buy now, pay later</source>
-        <target>PayPo – kup teraz, zapłać później</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="943260a37d0ce1db9ba58daedc22e49b">
-        <source><![CDATA[Learn more at <a href=":url" target="_blank">paypo.pl</a>]]></source>
-        <target><![CDATA[Dowiedz się więcej na <a href=":url" target="_blank">paypo.pl</a>]]></target>
+      <trans-unit id="f8a5ca688fab4f352d289c7be496c152">
+        <source>Pay with %method%</source>
+        <target>Zapłać z %method%</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="7bb28e4afd9fa2849ece7e460be697a5">
