@@ -35,7 +35,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.3';
+        $this->version = '1.1.4';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
