@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use SimPay\SDK\SimPay as SimPaySDK;
+use SimPay\SDK\AmountVerifier;
+use SimPay\SDK\PaymentStatus;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
-use SimPaypl\PrestaShop\Helper\SimPaySignatureValidator;
+use SimPaypl\PrestaShop\Service\SimPayBlikAliasService;
 use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
 use SimPaypl\PrestaShop\Service\SimPayRefundService;
 
@@ -76,53 +79,45 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
 
         // IP allowlist check (only log result)
         if ((bool) Configuration::get(SimpayDataConfiguration::IPN_CHECK_IP)) {
-            /** @var \SimPaypl\PrestaShop\SimPayApiService $paymentClient */
-            $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
+            /** @var SimPaySDK $simpay */
+            $simpay = $this->get('prestashop.module.simpay.front.payment_client');
 
-            $ips = (array) $paymentClient->getIps();
-            $ok = in_array(Tools::getRemoteAddr(), $ips, true);
-
-            if (!$ok) {
+            try {
+                $simpay->handleIpn(
+                    payload: $payload,
+                    userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null,
+                    remoteIp: Tools::getRemoteAddr()
+                );
+            } catch (\SimPay\SDK\Exception\IpNotAllowedException $e) {
                 SimPayLogger::respond(
                     403,
                     $this->trans('Invalid IP', [], 'Modules.Simpay.Logs'),
                     'BAD_IP'
                 );
+            } catch (\SimPay\SDK\Exception\IpnException $e) {
+                SimPayLogger::respond(
+                    400,
+                    $e->getMessage(),
+                    'IPN_VALIDATION_FAILED'
+                );
             }
-        }
+        } else {
+            /** @var SimPaySDK $simpay */
+            $simpay = $this->get('prestashop.module.simpay.front.payment_client');
 
-        // Version check from UA: "SimPay-IPN/2.0"
-        $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-        $parts = explode('/', $ua, 2);
-        $version = $parts[1] ?? 'N/A';
-
-        if ($version !== '2.0') {
-            SimPayLogger::respond(
-                400,
-                $this->trans('IPN version is not supported', [], 'Modules.Simpay.Logs'),
-                'BAD_VERSION',
-                ['v' => $version]
-            );
-        }
-
-        if (!$this->validateRequest($payload)) {
-            SimPayLogger::respond(
-                422,
-                $this->trans('Validation failed', [], 'Modules.Simpay.Logs'),
-                'BAD_FIELDS',
-                ['missing' => implode(',', $this->missingFields($payload))]
-            );
-        }
-
-        $sigKey = (string) Configuration::get(SimpayDataConfiguration::SERVICE_IPN_SIGNATURE_KEY);
-        $signatureOk = (new SimPaySignatureValidator())->isValid($payload, $sigKey);
-
-        if (!$signatureOk) {
-            SimPayLogger::respond(
-                409,
-                $this->trans('Invalid signature', [], 'Modules.Simpay.Logs'),
-                'BAD_SIGNATURE'
-            );
+            try {
+                $simpay->handleIpn(
+                    payload: $payload,
+                    userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null,
+                    remoteIp: null // skip IP check
+                );
+            } catch (\SimPay\SDK\Exception\IpnException $e) {
+                SimPayLogger::respond(
+                    400,
+                    $e->getMessage(),
+                    'IPN_VALIDATION_FAILED'
+                );
+            }
         }
 
         $type = (string) ($payload['type'] ?? '');
@@ -134,6 +129,18 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         if ($type === 'transaction_refund:status_changed') {
             $data = $payload['data'] ?? [];
             $this->handleRefundStatusChangedEvent($data);
+        }
+
+        if ($type === 'blik:alias_status_changed') {
+            $data = $payload['data'] ?? [];
+            $this->handleBlikAliasStatusChanged($data);
+        }
+
+        if ($type === 'transaction_blik_level0:code_status_changed') {
+            // Acknowledge but no action needed - transaction:status_changed handles order updates
+            SimPayLogger::info($this->trans('BLIK Level 0 code status event received', [], 'Modules.Simpay.Logs'), [
+                'status' => $payload['data']['status'] ?? '',
+            ]);
         }
 
         SimPayLogger::respond(200, 'OK', 'DONE');
@@ -176,7 +183,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         $finalChannel = (string) ($payload['payment']['channel'] ?? '');
 
         if (!(bool) $attemptData['is_active']) {
-            $this->attemptService>updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
+            $this->attemptService->updateStatus($transactionId, $status, PaymentStatus::isFinal($status), $finalChannel);
             SimPayLogger::info(
                 $this->trans('Inactive attempt, event ignored', [], 'Modules.Simpay.Logs'),
                 ['transaction' => $transactionId]
@@ -203,7 +210,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
 
         $incoming = (float) ($payload['amount']['original_value'] ?? 0);
         $expected = (float) $order->getTotalPaid();
-        if ($incoming > 0 && $this->isLessThan($incoming, $expected)) {
+        if ($incoming > 0 && !AmountVerifier::isAmountSufficient($expected, $incoming)) {
             SimPayLogger::error(
                 $this->trans('Amount too low', [], 'Modules.Simpay.Logs'),
                 ['incoming' => $incoming, 'expected' => $expected]
@@ -230,7 +237,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
                 $history->add();
             }
 
-            $this->attemptService->updateStatus($transactionId, $status, $this->isTerminalStatus($status), $finalChannel);
+            $this->attemptService->updateStatus($transactionId, $status, PaymentStatus::isFinal($status), $finalChannel);
 
             SimPayLogger::info(
                 $this->trans('Order status updated successfully', [], 'Modules.Simpay.Logs'),
@@ -299,45 +306,6 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         SimPayLogger::respond(200, 'OK', 'REFUND_STATUS_UPDATED');
     }
 
-    private function missingFields(array $payload): array
-    {
-        $required = ['type', 'notification_id', 'date', 'data', 'signature'];
-        $missing = [];
-
-        foreach ($required as $f) {
-            if (!array_key_exists($f, $payload) || $payload[$f] === null || $payload[$f] === '') {
-                $missing[] = $f;
-            }
-        }
-
-        return $missing;
-    }
-
-    private function validateRequest(?array $payload): bool
-    {
-        if (empty($payload)) {
-            return false;
-        }
-
-        foreach (['type', 'notification_id', 'date', 'data', 'signature'] as $field) {
-            if (empty($payload[$field])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function isLessThan(float $a, float $b, int $precision = 2): bool
-    {
-        $factor = 10 ** $precision;
-
-        $ai = (int) round($a * $factor);
-        $bi = (int) round($b * $factor);
-
-        return $ai < $bi;
-    }
-
     private function resolveOrderForAttempt(array $attempt): ?Order
     {
         $orderId = (int) ($attempt['id_order'] ?? 0);
@@ -352,25 +320,60 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
 
     private function mapStatusToOrderState(string $status): ?int
     {
+        if (PaymentStatus::isPaid($status)) {
+            return (int) Configuration::get('PS_OS_PAYMENT');
+        }
+
         return match ($status) {
-            'transaction_paid', 'transaction_confirmed' => (int) Configuration::get('PS_OS_PAYMENT'),
-            'transaction_canceled' => (int) Configuration::get('PS_OS_CANCELED'),
-            'transaction_fraud', 'transaction_failure' => (int) Configuration::get('PS_OS_ERROR'),
-            'transaction_expired' => (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED),
-            'transaction_refunded' => (int) Configuration::get('PS_OS_REFUND'),
+            PaymentStatus::TRANSACTION_CANCELED => (int) Configuration::get('PS_OS_CANCELED'),
+            PaymentStatus::TRANSACTION_FRAUD, PaymentStatus::TRANSACTION_FAILURE => (int) Configuration::get('PS_OS_ERROR'),
+            PaymentStatus::TRANSACTION_EXPIRED => (int) Configuration::get(Simpay::CONFIG_OS_EXPIRED),
+            PaymentStatus::TRANSACTION_REFUNDED => (int) Configuration::get('PS_OS_REFUND'),
             default => null,
         };
     }
 
-    private function isTerminalStatus(string $status): bool
+    /**
+     * Handle blik:alias_status_changed IPN event.
+     *
+     * When status is alias_active, save the alias UUID in database.
+     * This enables OneClick payments for the customer.
+     */
+    private function handleBlikAliasStatusChanged(array $data): void
     {
-        return in_array($status, [
-            'transaction_paid',
-            'transaction_canceled',
-            'transaction_failure',
-            'transaction_fraud',
-            'transaction_expired',
-            'transaction_refunded'
-        ], true);
+        $aliasUuid = (string) ($data['id'] ?? '');
+        $status = (string) ($data['status'] ?? '');
+        $aliasValue = (string) ($data['value'] ?? '');
+
+        if ($aliasUuid === '' || $status === '' || $aliasValue === '') {
+            SimPayLogger::respond(
+                400,
+                $this->trans('Missing BLIK alias data', [], 'Modules.Simpay.Logs'),
+                'ALIAS_MISSING_DATA'
+            );
+        }
+
+        SimPayLogger::info($this->trans('BLIK alias status changed', [], 'Modules.Simpay.Logs'), [
+            'alias_uuid' => $aliasUuid,
+            'alias_value' => $aliasValue,
+            'status' => $status,
+        ]);
+
+        /** @var SimPayBlikAliasService $aliasService */
+        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+
+        if ($status === 'alias_active') {
+            $activated = $aliasService->activateAlias($aliasValue, $aliasUuid, $status);
+            if ($activated) {
+                SimPayLogger::info($this->trans('BLIK alias activated successfully', [], 'Modules.Simpay.Logs'), [
+                    'alias_uuid' => $aliasUuid,
+                ]);
+            }
+        } else {
+            // Handle other statuses (alias_inactive, alias_expired, etc.)
+            $aliasService->updateAliasStatus($aliasUuid, $status);
+        }
+
+        SimPayLogger::respond(200, 'OK', 'ALIAS_STATUS_UPDATED');
     }
 }

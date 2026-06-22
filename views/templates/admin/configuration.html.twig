@@ -51,6 +51,7 @@
                         {{ form_row(configurationForm.show_separate_payment_methods) }}
                         {{ form_widget(configurationForm.separate_payment_methods_list) }}
                         {% include '@Modules/simpay/views/templates/admin/config/_payment_methods_block.html.twig' %}
+                        {{ form_row(configurationForm.blik_oneclick_enabled) }}
                         {{ form_row(configurationForm.show_blik_in_widget) }}
                         {{ form_row(configurationForm.repayment_enabled) }}
                     </div>

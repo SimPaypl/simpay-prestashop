@@ -143,6 +143,16 @@
         <target>Pokaż płatność BLIK jako widżet</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="96927e64dc19ccf7d9ffeff9924e019c">
+        <source>Enable BLIK OneClick (payment without code)</source>
+        <target>Włącz BLIK OneClick (płatność bez kodu)</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="624c2c626dcf01e6627f5d59b29c2584">
+        <source>Allows returning customers to pay with one click, without entering a BLIK code. Requires BLIK Level 0 and OneClick to be activated in your SimPay panel.</source>
+        <target>Umożliwia stałym klientom płacenie jednym kliknięciem, bez konieczności wpisywania kodu BLIK. Wymaga aktywacji BLIK Poziom 0 i OneClick w panelu SimPay.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="c9d25234079fab9c6d738085061140ed">
         <source>Re-payment enabled</source>
         <target>Ponowienie płatności</target>

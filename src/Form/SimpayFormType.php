@@ -111,6 +111,17 @@ final class SimpayFormType extends TranslatorAwareType
                 ),
                 'required' => false,
             ])
+            ->add('blik_oneclick_enabled', SwitchType::class, [
+                'label' => $this->trans(
+                    'Enable BLIK OneClick (payment without code)',
+                    'Modules.Simpay.Admin'
+                ),
+                'help' => $this->trans(
+                    'Allows returning customers to pay with one click, without entering a BLIK code. Requires BLIK Level 0 and OneClick to be activated in your SimPay panel.',
+                    'Modules.Simpay.Admin'
+                ),
+                'required' => false,
+            ])
             ->add('repayment_enabled', SwitchType::class, [
                 'label' => $this->trans(
                     'Re-payment enabled',

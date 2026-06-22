@@ -6,14 +6,13 @@ namespace SimPaypl\PrestaShop\Service;
 
 use Db;
 use Order;
+use SimPay\SDK\SimPay;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
-use SimPaypl\PrestaShop\SimPayApiService;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 final class SimPayRefundService
 {
     public function __construct(
-        private readonly SimPayApiService $api
+        private readonly SimPay $simpay
     ) {}
 
     public function requestRefund(Order $order, string $type, ?float $amount): array
@@ -49,8 +48,7 @@ final class SimPayRefundService
         }
 
         try {
-            $response = $this->api->createRefund($transactionId, $type === 'partial' ? $amountValue : null);
-            $payload = json_decode($response->getContent(false), true);
+            $payload = $this->simpay->client()->createRefund($transactionId, $type === 'partial' ? $amountValue : null);
 
             if (!is_array($payload) || empty($payload['success'])) {
                 $message = is_array($payload) && !empty($payload['message']) ? (string) $payload['message'] : null;
@@ -85,7 +83,7 @@ final class SimPayRefundService
             ]);
 
             return ['success' => true, 'code' => 'ok', 'refund_id' => $refundId];
-        } catch (TransportExceptionInterface|\Throwable $e) {
+        } catch (\Throwable $e) {
             SimPayLogger::error('Refund API exception', [
                 'order' => (int) $order->id,
                 'transaction' => $transactionId,

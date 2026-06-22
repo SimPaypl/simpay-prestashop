@@ -241,6 +241,56 @@ body#checkout .additional-information:has(.simpay-wrapper) {
     margin-top: 1rem;
 }
 
+/* OneClick */
+.simpay-blik-oneclick {
+    padding: 1rem 0;
+}
+
+.simpay-blik-oneclick__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border: 2px solid #03d14e;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.simpay-blik-oneclick__btn:hover {
+    background: #e8fde8;
+    border-color: #02b843;
+}
+
+.simpay-blik-oneclick__icon {
+    width: 28px;
+    height: 28px;
+}
+
+.simpay-blik-oneclick__info {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.simpay-blik-oneclick__switch {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #888;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.simpay-blik-oneclick__switch:hover{
+    color: #00c062 !important;
+}
+
+
 @keyframes simpay-spin {
     to { transform: rotate(360deg); }
 }

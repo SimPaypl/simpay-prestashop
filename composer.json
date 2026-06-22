@@ -20,7 +20,8 @@
     }
   },
   "require": {
-    "php": "^8.1"
+    "php": "^8.1",
+    "simpay/ecommerce": "*"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.10",

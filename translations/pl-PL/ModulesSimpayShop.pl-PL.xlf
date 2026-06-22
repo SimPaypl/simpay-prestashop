@@ -157,6 +157,36 @@
         <target>Płatność odrzucona w aplikacji bankowej. Spróbuj ponownie.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="7aa584c60e29730cb91fa9424174e78e">
+        <source>Payment without code was declined. Please enter a BLIK code.</source>
+        <target>Płatność bez kodu została odrzucona. Proszę podać kod BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a20d6b53b675abc3b24318a2289bbdbb">
+        <source>Payment declined by the bank. Try again or use a different payment method.</source>
+        <target>Płatność odrzucona przez bank. Spróbuj ponownie lub użyj innej metody płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e4dbd4841fa31aff6858d73dfd561591">
+        <source>BLIK OneClick is not enabled.</source>
+        <target>Usługa BLIK OneClick nie jest włączona.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d3015eec05c970d4e8ff8da5b528080a">
+        <source>No active BLIK alias found. Please pay with BLIK code first.</source>
+        <target>Nie znaleziono aktywnego aliasu BLIK. Proszę najpierw zapłacić kodem BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="353b5c578d9b273311d254e18aa2e770">
+        <source>We could not initialize the payment.</source>
+        <target>Nie znaleziono aktywnego aliasu BLIK. Proszę najpierw zapłacić kodem BLIK.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="883b9a73508d71a867987e2e5b911959">
+        <source>BLIK OneClick request failed.</source>
+        <target>Żądanie BLIK OneClick nie powiodło się.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="f8a5ca688fab4f352d289c7be496c152">
         <source>Pay with %method%</source>
         <target>Zapłać z %method%</target>
@@ -238,9 +268,29 @@
         <target>Aby kontynuować, zaakceptuj zgody.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="c4cb229f0408eb3df210453af18cd166">
+        <source>Pay without code</source>
+        <target>Zapłać bez kodu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="081cea6c910f8b3f772a45891d7043bf">
+        <source>Payment will be sent directly to your banking app for confirmation.</source>
+        <target>Płatność zostanie wysłana bezpośrednio na Twoją aplikację bankową w celu potwierdzenia.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="94ed4063a85a01a42ad36be908423e6e">
+        <source>I want to enter a BLIK code instead</source>
+        <target>Zamiast tego chcę wpisać kod BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="91d1fc4990d4fff923bde3c6c70b7e16">
         <source>BLIK code</source>
         <target>kod BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e1d5035ecc47d63d30d9143e872e38ca">
+        <source>Pay without entering a code</source>
+        <target>Zapłać bez podawania kodu</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="10ad3658743ddcab625aaf568cfcc52d">

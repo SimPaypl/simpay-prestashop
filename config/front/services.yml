@@ -16,7 +16,7 @@ services:
       - '@prestashop.module.simpay.front.payment_client'
 
   prestashop.module.simpay.front.payment_client:
-    class: 'Simpay\PaymentInterface'
+    class: 'SimPay\SDK\SimPay'
     factory: '@prestashop.module.simpay.front.payment_client_factory'
 
   prestashop.module.simpay.channel_cache:
@@ -44,3 +44,6 @@ services:
     arguments:
       - '@simpay.module'
       - '@prestashop.adapter.legacy.context'
+
+  prestashop.module.simpay.blik_alias_service:
+    class: 'SimPaypl\PrestaShop\Service\SimPayBlikAliasService'

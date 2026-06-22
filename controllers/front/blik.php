@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
+use SimPaypl\PrestaShop\Service\SimPayBlikAliasService;
 use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
 use SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder;
-use SimPaypl\PrestaShop\SimPayApiService;
+use SimPay\SDK\SimPay as SimPaySDK;
 
 final class SimpayBlikModuleFrontController extends ModuleFrontController
 {
@@ -20,6 +21,12 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         $action = (string) Tools::getValue('action', 'init');
         if ($action === 'status') {
             return $this->handleStatus();
+        }
+        if ($action === 'oneclick') {
+            return $this->handleOneClick();
+        }
+        if ($action === 'check_oneclick') {
+            return $this->handleCheckOneClick();
         }
 
         if (!Module::isEnabled($this->module->name) || !$this->module->active) {
@@ -90,25 +97,22 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         /** @var SimPayPaymentRequestBuilder $builder */
         $builder = $this->get('prestashop.module.simpay.payment_request_builder');
         $payload = $builder->build($cart, (string) $customer->secure_key, 'blik-level0', (int) $order->id);
-
-        /** @var SimPayApiService $paymentClient */
-        $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
+        /** @var SimPaySDK $simpay */
+        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
 
         try {
-            $response = $paymentClient->createPayment(['json' => $payload]);
+            $json = $simpay->client()->createTransaction($payload);
         } catch (\Throwable $e) {
             SimPayLogger::error($this->trans('BLIK payment initialization failed.', [], 'Modules.Simpay.Logs'), [
                 'exception' => $e->getMessage(),
+                'class' => get_class($e),
             ]);
-            return $this->respondError($this->trans('We could not initialize the BLIK payment.', [], 'Modules.Simpay.Shop'));
+            return $this->respondError(
+                $this->trans('We could not initialize the BLIK payment.', [], 'Modules.Simpay.Shop'),
+                'INIT_FAILED'
+            );
         }
 
-        if ($response->getStatusCode() !== 201) {
-            SimPayLogger::error($this->trans('BLIK payment initialization failed.', [], 'Modules.Simpay.Logs'));
-            return $this->respondError($this->trans('We could not initialize the BLIK payment.', [], 'Modules.Simpay.Shop'));
-        }
-
-        $json = json_decode($response->getContent(false), true);
         $transactionId = (string) ($json['data']['transactionId'] ?? '');
 
         if ($transactionId === '') {
@@ -117,10 +121,35 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
 
         $attemptService->registerAttempt($order, $transactionId, 'blik-level0', 'checkout');
 
-        /** @var SimPayApiService $paymentClient */
-        $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
+        // OneClick alias is REQUIRED by SimPay API for every BLIK Level 0 call when OneClick is enabled on service.
+        // When paying WITH a code, alias must always be in "register" format (value + type), never uuid.
+        // The uuid format is only valid for OneClick (without code) via sendBlikOneClick.
+        /** @var SimPayBlikAliasService $aliasService */
+        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+        $alias = null;
 
-        $blikResult = $this->sendBlikLevel0($paymentClient, $transactionId, $blikCode);
+        if ($aliasService->isOneClickEnabled()
+            && (int) $customer->id > 0
+            && !(bool) $customer->is_guest
+        ) {
+            // Always use register format (value + type) for sendBlikLevel0 (with code)
+            $alias = $aliasService->buildRegistrationAliasPayload((int) $customer->id);
+            $alias['mode'] = 'register';
+
+            // Save to DB only if no existing record (active or pending)
+            if (!$aliasService->findActiveAlias((int) $customer->id)
+                && !$aliasService->findPendingAlias((int) $customer->id)
+            ) {
+                $aliasService->registerAlias(
+                    (int) $customer->id,
+                    $alias['value'],
+                    $alias['label']
+                );
+            }
+        }
+
+        $blikResult = $this->sendBlikLevel0($simpay, $transactionId, $blikCode, $alias);
+
         if (!$blikResult['success']) {
             $attemptService->updateStatus($transactionId, 'blik_code_failed', false);
 
@@ -148,25 +177,37 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         ], $this->trans('Confirm the payment in your banking app.', [], 'Modules.Simpay.Shop'));
     }
 
-    private function sendBlikLevel0($paymentClient, string $transactionId, string $blikCode): array
+    private function sendBlikLevel0(SimPaySDK $simpay, string $transactionId, string $blikCode, ?array $alias = null): array
     {
         $serviceId = (string) Configuration::get(SimpayDataConfiguration::SERVICE_ID);
         if ($serviceId === '') {
             return ['success' => false, 'message' => $this->trans('Missing service ID.', [], 'Modules.Simpay.Shop')];
         }
 
-        $response = $paymentClient->sendBlikLevel0($transactionId, $blikCode);
-        $status = $response->getStatusCode();
-        $body = (string) $response->getContent(false);
-
-        if ($status === 204) {
-            return ['success' => true];
+        $blikAlias = null;
+        if ($alias !== null) {
+            $blikAlias = \SimPay\SDK\BlikAlias::register(
+                $alias['label'],
+                $alias['value'],
+                $alias['type'] ?? 'UID'
+            );
         }
 
-        $decoded = json_decode($body, true);
-        if (is_array($decoded)) {
-            $errorCode = (string) ($decoded['errorCode'] ?? '');
-            $message = (string) ($decoded['message'] ?? '');
+        try {
+            $simpay->client()->sendBlikLevel0($transactionId, $blikCode, $blikAlias);
+            return ['success' => true];
+        } catch (\SimPay\SDK\Exception\ApiException $e) {
+            $errorCode = $e->getApiCode() ?? "";
+            $message = $e->getMessage();
+
+            SimPayLogger::error('BLIK Level 0 API error', [
+                'http_status' => $e->getHttpStatusCode(),
+                'api_code' => $errorCode,
+                'api_message' => $e->getApiMessage(),
+                'full_message' => $message,
+                'transaction_id' => $transactionId,
+                'has_alias' => $blikAlias !== null,
+            ]);
 
             if ($errorCode !== '') {
                 $message = $this->translateBlikErrorCode($errorCode, $message);
@@ -176,10 +217,16 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
                 'success' => false,
                 'message' => $message,
                 'error_code' => $errorCode,
+                'http_status' => $e->getHttpStatusCode(),
             ];
+        } catch (\Throwable $e) {
+            SimPayLogger::error('BLIK Level 0 unexpected error', [
+                'class' => get_class($e),
+                'message' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+            return ['success' => false, 'message' => $this->trans('BLIK request failed.', [], 'Modules.Simpay.Shop')];
         }
-
-        return ['success' => false, 'message' => $this->trans('BLIK request failed.', [], 'Modules.Simpay.Shop')];
     }
 
     private function translateBlikErrorCode(string $code, string $fallback = ''): string
@@ -204,10 +251,180 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
             'SEC_DECLINED' => $this->trans('Payment failed. Check the reason in the banking app and try again.', [], 'Modules.Simpay.Shop'),
             'USER_DECLINED' => $this->trans('Payment rejected in a banking app. Try again.', [], 'Modules.Simpay.Shop'),
             'TAS_DECLINED' => $this->trans('Payment failed. Check the reason in the banking app and try again.', [], 'Modules.Simpay.Shop'),
+            'ALIAS_DECLINED' => $this->trans('Payment without code was declined. Please enter a BLIK code.', [], 'Modules.Simpay.Shop'),
+            'USER_TIMEOUT' => $this->trans('Payment failed - not confirmed on time in the banking app. Try again.', [], 'Modules.Simpay.Shop'),
+            'ISSUER_DECLINED' => $this->trans('Payment declined by the bank. Try again or use a different payment method.', [], 'Modules.Simpay.Shop'),
         ];
 
         return $map[$code] ?? ($fallback !== '' ? $fallback : $this->trans('Invalid BLIK code.', [], 'Modules.Simpay.Shop'));
     }
+
+    /**
+     * Check if customer can use OneClick (has active alias).
+     */
+    private function handleCheckOneClick(): void
+    {
+        $token = (string) Tools::getValue('token');
+        if ($token === '' || $token !== Tools::getToken('simpay')) {
+            $this->respondError($this->trans('Invalid payment token.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $customer = $this->context->customer;
+        if (!$customer || (int) $customer->id <= 0 || (bool) $customer->is_guest) {
+            $this->respondOk(['oneclick_available' => false]);
+            return;
+        }
+
+        /** @var SimPayBlikAliasService $aliasService */
+        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+
+        $this->respondOk([
+            'oneclick_available' => $aliasService->canPayWithoutCode((int) $customer->id),
+        ]);
+    }
+
+    /**
+     * Handle OneClick payment (no BLIK code required).
+     */
+    private function handleOneClick(): void
+    {
+        if (!Module::isEnabled($this->module->name) || !$this->module->active) {
+            $this->respondError($this->trans('Payment method is not available.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $token = (string) Tools::getValue('token');
+        if ($token === '' || $token !== Tools::getToken('simpay')) {
+            $this->respondError($this->trans('Invalid payment token.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        /** @var SimPayBlikAliasService $aliasService */
+        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+
+        if (!$aliasService->isOneClickEnabled()) {
+            $this->respondError($this->trans('BLIK OneClick is not enabled.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $cartId = (int) Tools::getValue('cart_id');
+        $cart = $cartId > 0 ? new Cart($cartId) : $this->context->cart;
+        if (!Validate::isLoadedObject($cart)) {
+            $this->respondError($this->trans('Cart not found.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $currency = new Currency((int) $cart->id_currency);
+        if ($currency->iso_code !== 'PLN') {
+            $this->respondError($this->trans('BLIK supports PLN only.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $customer = new Customer((int) $cart->id_customer);
+        if (!Validate::isLoadedObject($customer)) {
+            $this->respondError($this->trans('Customer not found.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $activeAlias = $aliasService->findActiveAlias((int) $customer->id);
+        if (!$activeAlias || empty($activeAlias['alias_uuid'])) {
+            $this->respondError($this->trans('No active BLIK alias found. Please pay with BLIK code first.', [], 'Modules.Simpay.Shop'), 'NO_ACTIVE_ALIAS');
+            return;
+        }
+
+        // Create order if not exists
+        $orderId = (int) Order::getIdByCartId((int) $cart->id);
+        if ($orderId <= 0) {
+            $awaitingState = (int) Configuration::get(Simpay::CONFIG_OS_AWAITING);
+            $this->module->validateOrder(
+                (int) $cart->id,
+                $awaitingState,
+                $cart->getOrderTotal(),
+                $this->trans('SimPay', [], 'Modules.Simpay.Shop'),
+                null,
+                null,
+                (int) $currency->id,
+                false,
+                (string) $customer->secure_key
+            );
+            $orderId = (int) $this->module->currentOrder;
+        }
+
+        $order = new Order($orderId);
+        if (!Validate::isLoadedObject($order)) {
+            $this->respondError($this->trans('Order not found.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        SimPayLogger::setDefaultOrderId((int) $order->id);
+
+        /** @var SimPayPaymentRequestBuilder $builder */
+        $builder = $this->get('prestashop.module.simpay.payment_request_builder');
+        $payload = $builder->build($cart, (string) $customer->secure_key, 'blik-level0', (int) $order->id);
+
+        /** @var SimPaySDK $simpay */
+        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
+
+        try {
+            $json = $simpay->client()->createTransaction($payload);
+        } catch (\Throwable $e) {
+            SimPayLogger::error($this->trans('OneClick payment initialization failed.', [], 'Modules.Simpay.Logs'), [
+                'exception' => $e->getMessage(),
+            ]);
+            $this->respondError($this->trans('We could not initialize the payment.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $transactionId = (string) ($json['data']['transactionId'] ?? '');
+        if ($transactionId === '') {
+            $this->respondError($this->trans('Missing transaction ID.', [], 'Modules.Simpay.Shop'));
+            return;
+        }
+
+        $attemptService = new SimPayPaymentAttemptService();
+        $attemptService->registerAttempt($order, $transactionId, 'blik-oneclick', 'checkout');
+
+        // Send OneClick request (no code, using alias uuid)
+        $aliasPayload = $aliasService->buildOneClickAliasPayload($activeAlias);
+        $blikAlias = \SimPay\SDK\BlikAlias::fromUuid(
+            $aliasPayload['uuid'],
+            $aliasPayload['label']
+        );
+
+        try {
+            $simpay->client()->sendBlikOneClick($transactionId, $blikAlias);
+
+            $attemptService->updateStatus($transactionId, 'blik_oneclick_sent', false);
+            SimPayLogger::info($this->trans('BLIK OneClick payment sent.', [], 'Modules.Simpay.Logs'), [
+                'transaction_id' => $transactionId,
+            ]);
+
+            $this->respondOk([
+                'transaction_id' => $transactionId,
+                'order_id' => (int) $order->id,
+                'confirm_required' => true,
+            ], $this->trans('Confirm the payment in your banking app.', [], 'Modules.Simpay.Shop'));
+        } catch (\SimPay\SDK\Exception\ApiException $e) {
+            $errorCode = $e->getApiCode() ?? "";
+
+
+            $attemptService->updateStatus($transactionId, 'blik_oneclick_failed', false);
+            SimPayLogger::error($this->trans('BLIK OneClick failed.', [], 'Modules.Simpay.Logs'), [
+                'error_code' => $errorCode,
+                'message' => $e->getMessage(),
+            ]);
+
+            $this->respondError(
+                $this->translateBlikErrorCode($errorCode, $e->getMessage()),
+                $errorCode
+            );
+        } catch (\Throwable $e) {
+            $attemptService->updateStatus($transactionId, 'blik_oneclick_failed', false);
+            $this->respondError($this->trans('BLIK OneClick request failed.', [], 'Modules.Simpay.Shop'));
+        }
+    }
+
 
     private function respondOk(array $data, string $message = ''): void
     {

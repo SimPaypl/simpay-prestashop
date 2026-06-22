@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SimPaypl\PrestaShop\Helper;
 
 use Configuration;
-use SimPaypl\PrestaShop\SimPayApiService;
+use SimPay\SDK\SimPay;
 
 /**
  * Caches SimPay channels list in PrestaShop Configuration.
@@ -26,11 +26,11 @@ final class SimPayChannelCache
          'blik-recurrent'
     ];
 
-    private SimPayApiService $simPayApiService;
+    private SimPay $simpay;
 
-    public function __construct(SimPayApiService $simPayApiService)
+    public function __construct(SimPay $simpay)
     {
-        $this->simPayApiService = $simPayApiService;
+        $this->simpay = $simpay;
     }
 
     /**
@@ -133,13 +133,13 @@ final class SimPayChannelCache
      * Fetch channels from API and normalize response.
      *
      * IMPORTANT:
-     * SimPayApiService::getChannels() should return the "data" list (array of channels).
+     * SimPay SDK getChannels() should return the "data" list (array of channels).
      *
      * @return array<int, array{id:string,name:string,type:string,img:?string}>
      */
     private function fetchFromApi(): array
     {
-        $rawChannels = $this->simPayApiService->getChannels();
+        $rawChannels = $this->simpay->client()->getChannels();
 
         if (!is_array($rawChannels)) {
             return [];

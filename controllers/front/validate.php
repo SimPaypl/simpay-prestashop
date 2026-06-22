@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
 use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
-use SimPaypl\PrestaShop\SimPayApiService;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
 
@@ -56,8 +55,8 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             return;
         }
 
-        /** @var SimPayApiService $paymentClient */
-        $paymentClient = $this->get('prestashop.module.simpay.front.payment_client');
+        /** @var SimPay $simpay */
+        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
 
         $method = Tools::getValue('method');
         if (!$method && Tools::getValue('simpay_method_choice')) {
@@ -73,17 +72,16 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             $method = null;
         }
 
-        /** @var \SimPaypl\PrestaShop\Service\PaymentRequestBuilder $builder */
+        /** @var \SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder $builder */
         $builder = $this->get('prestashop.module.simpay.payment_request_builder');
         $builderOrderId = $this->retryOrder ? (int) $this->retryOrder->id : (int) $this->module->currentOrder;
         $payload = $builder->build($cart, $customer->secure_key, $method ?: null, $builderOrderId);
 
-        /** @var string $serviceIdString */
-        $response = $paymentClient->createPayment(['json' => $payload]);
-
-        if ($response->getStatusCode() !== 201) {
+        try {
+            $json = $simpay->client()->createTransaction($payload);
+        } catch (\Throwable $e) {
             PrestaShopLogger::addLog(
-                'SimPayPayment: Generate error: ' . $response->getContent(false),
+                'SimPayPayment: Generate error: ' . $e->getMessage(),
                 3,
                 0,
                 'Cart',
@@ -106,9 +104,7 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $json = json_decode($response->getContent(), false);
-
-        $transactionId = (string) $json->data->transactionId;
+        $transactionId = (string) ($json['data']['transactionId'] ?? '');
         $cartId = (int) $cart->id;
         $orderStateAwaiting = (int) Configuration::get(Simpay::CONFIG_OS_AWAITING);
         $orderTotal = $cart->getOrderTotal();
@@ -157,7 +153,7 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         $this->setTemplate('module:simpay/views/templates/front/validate.tpl');
         $this->context->smarty?->assign([
-            'action' => $json->data->redirectUrl,
+            'action' => $json['data']['redirectUrl']
         ]);
     }
 

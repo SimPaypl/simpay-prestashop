@@ -18,7 +18,7 @@ services:
       - '@prestashop.adapter.legacy.configuration'
 
   prestashop.module.simpay.front.payment_client:
-    class: 'SimPaypl\PrestaShop\SimPayApiService'
+    class: 'SimPay\SDK\SimPay'
     factory: '@prestashop.module.simpay.front.payment_client_factory'
 
   prestashop.module.simpay.channel_cache:

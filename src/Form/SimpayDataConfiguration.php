@@ -17,6 +17,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const SHOW_SEPARATE_PAYMENT_METHODS = 'SIMPAY_SHOW_SEPARATE_PAYMENT_METHODS';
     public const SEPARATE_PAYMENT_METHODS_LIST = 'SIMPAY_SEPARATE_PAYMENT_METHODS_LIST';
     public const SHOW_BLIK_IN_WIDGET = 'SIMPAY_SHOW_BLIK_IN_WIDGET';
+    public const BLIK_ONECLICK_ENABLED = 'SIMPAY_BLIK_ONECLICK_ENABLED';
     public const IPN_CHECK_IP = 'SIMPAY_IPN_CHECK_IP';
     public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
 
@@ -51,6 +52,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'show_separate_payment_methods' => (bool)$this->configuration->get(self::SHOW_SEPARATE_PAYMENT_METHODS),
             'separate_payment_methods_list' => (string)$this->configuration->get(self::SEPARATE_PAYMENT_METHODS_LIST),
             'show_blik_in_widget' => (bool)$this->configuration->get(self::SHOW_BLIK_IN_WIDGET),
+            'blik_oneclick_enabled' => (bool)$this->configuration->get(self::BLIK_ONECLICK_ENABLED),
             'ipn_check_ip' => (bool)$this->configuration->get(self::IPN_CHECK_IP),
             'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
         ];
@@ -85,6 +87,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::SHOW_SEPARATE_PAYMENT_METHODS, $configuration['show_separate_payment_methods']);
         $this->configuration->set(self::SEPARATE_PAYMENT_METHODS_LIST, $configuration['separate_payment_methods_list']);
         $this->configuration->set(self::SHOW_BLIK_IN_WIDGET, $configuration['show_blik_in_widget']);
+        $this->configuration->set(self::BLIK_ONECLICK_ENABLED, $configuration['blik_oneclick_enabled'] ?? false);
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
         $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
         return [];

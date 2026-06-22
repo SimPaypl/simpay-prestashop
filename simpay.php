@@ -35,7 +35,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.4';
+        $this->version = '1.2.1';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -103,6 +103,10 @@ final class Simpay extends PaymentModule
         }
 
         if (!$this->installPaymentLogTable()) {
+            return false;
+        }
+
+        if (!$this->installBlikAliasTable()) {
             return false;
         }
 
@@ -300,6 +304,7 @@ final class Simpay extends PaymentModule
                         'simpay_blik_widget_cart_id' => (int) $cart->id,
                         'simpay_blik_widget_token' => $token,
                         'simpay_blik_widget_assets' => $this->_path,
+                        'simpay_blik_oneclick_enabled' => (bool) Configuration::get(SimpayDataConfiguration::BLIK_ONECLICK_ENABLED),
                     ]);
                     $additionalInformation = $this->fetch('module:' . $this->name . '/views/templates/hook/blik_widget.tpl');
                 }
@@ -851,6 +856,26 @@ final class Simpay extends PaymentModule
             PRIMARY KEY (`id_simpay_payment_log`),
             KEY `idx_simpay_log_order` (`id_order`),
             KEY `idx_simpay_log_level` (`level`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    public function installBlikAliasTable(): bool
+    {
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'simpay_blik_alias` (
+            `id_simpay_blik_alias` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `id_customer` INT UNSIGNED NOT NULL,
+            `alias_uuid` VARCHAR(64) DEFAULT NULL,
+            `alias_value` VARCHAR(128) NOT NULL,
+            `alias_label` VARCHAR(128) DEFAULT NULL,
+            `status` VARCHAR(32) NOT NULL DEFAULT \'pending\',
+            `created_at` DATETIME NOT NULL,
+            `updated_at` DATETIME NOT NULL,
+            PRIMARY KEY (`id_simpay_blik_alias`),
+            KEY `idx_simpay_blik_customer` (`id_customer`),
+            KEY `idx_simpay_blik_status` (`status`),
+            UNIQUE KEY `uniq_simpay_blik_value` (`alias_value`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
 
         return Db::getInstance()->execute($sql);

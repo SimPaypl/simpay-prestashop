@@ -37,6 +37,21 @@
         <target>Kod BLIK zaakceptowany.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="178f19447c96c6a93622105d45abc522">
+        <source>OneClick payment initialization failed.</source>
+        <target>Inicjalizacja płatności OneClick nie powiodła się.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="31fda98852f04772a2df3c07d282b034">
+        <source>BLIK OneClick payment sent.</source>
+        <target>Płatność BLIK OneClick wysłana.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="657ca009d8a64d2b806ab7481b3617d9">
+        <source>BLIK OneClick failed.</source>
+        <target>BLIK OneClick nie powiódł się.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="e84e55d186de7883e285e32fc32bfa7c">
         <source>Method not allowed</source>
         <target>Metoda niedozwolona</target>
@@ -57,19 +72,9 @@
         <target>Nieprawidłowy adres IP</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="9b259cd9eab1f7ea9abf1f4c4fa5359a">
-        <source>IPN version is not supported</source>
-        <target>Wersja IPN nie jest obsługiwana</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="d10fb60c71d2c232120f9df29cbc7989">
-        <source>Validation failed</source>
-        <target>Walidacja nie powiodła się</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="fca3fbced675f75182786525bf4706dc">
-        <source>Invalid signature</source>
-        <target>Nieprawidłowa sygnatura</target>
+      <trans-unit id="7cc27b6df875975a01033308c7a6f273">
+        <source>BLIK Level 0 code status event received</source>
+        <target>Otrzymano zdarzenie statusu kodu BLIK poziomu 0</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="1b96cd1835267048e4bec126030b84c7">
@@ -145,6 +150,21 @@
       <trans-unit id="99973a2b01e08f4f7a1aefccd01c97d3">
         <source>Refund status updated</source>
         <target>Stan zwrotu został zaktualizowany</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2b1257ffe5bca02cc074b563e112c325">
+        <source>Missing BLIK alias data</source>
+        <target>Brak danych aliasu BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="244ce438dc8147e98c5cbcfe4b6048c1">
+        <source>BLIK alias status changed</source>
+        <target>Zmieniono status aliasu BLIK</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a5f6ce2ef407bb88173a816c4dbc63f">
+        <source>BLIK alias activated successfully</source>
+        <target>Alias ​​BLIK został pomyślnie aktywowany</target>
         <note>Line: </note>
       </trans-unit>
     </body>
