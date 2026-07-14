@@ -92,13 +92,13 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         SimPayLogger::setDefaultOrderId((int) $order->id);
 
         /** @var SimPayPaymentAttemptService $attemptService */
-        $attemptService = new SimPayPaymentAttemptService();
+        $attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
 
         /** @var SimPayPaymentRequestBuilder $builder */
-        $builder = $this->get('prestashop.module.simpay.payment_request_builder');
+        $builder = $this->module->getService(SimPayPaymentRequestBuilder::class);
         $payload = $builder->build($cart, (string) $customer->secure_key, 'blik-level0', (int) $order->id);
         /** @var SimPaySDK $simpay */
-        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
+        $simpay = $this->module->getService(SimPaySDK::class);
 
         try {
             $json = $simpay->client()->createTransaction($payload);
@@ -125,7 +125,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         // When paying WITH a code, alias must always be in "register" format (value + type), never uuid.
         // The uuid format is only valid for OneClick (without code) via sendBlikOneClick.
         /** @var SimPayBlikAliasService $aliasService */
-        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+        $aliasService = $this->module->getService(SimPayBlikAliasService::class);
         $alias = null;
 
         if ($aliasService->isOneClickEnabled()
@@ -277,7 +277,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         }
 
         /** @var SimPayBlikAliasService $aliasService */
-        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+        $aliasService = $this->module->getService(SimPayBlikAliasService::class);
 
         $this->respondOk([
             'oneclick_available' => $aliasService->canPayWithoutCode((int) $customer->id),
@@ -301,7 +301,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         }
 
         /** @var SimPayBlikAliasService $aliasService */
-        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+        $aliasService = $this->module->getService(SimPayBlikAliasService::class);
 
         if (!$aliasService->isOneClickEnabled()) {
             $this->respondError($this->trans('BLIK OneClick is not enabled.', [], 'Modules.Simpay.Shop'));
@@ -360,11 +360,11 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         SimPayLogger::setDefaultOrderId((int) $order->id);
 
         /** @var SimPayPaymentRequestBuilder $builder */
-        $builder = $this->get('prestashop.module.simpay.payment_request_builder');
+        $builder = $this->module->getService(SimPayPaymentRequestBuilder::class);
         $payload = $builder->build($cart, (string) $customer->secure_key, 'blik-level0', (int) $order->id);
 
         /** @var SimPaySDK $simpay */
-        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
+        $simpay = $this->module->getService(SimPaySDK::class);
 
         try {
             $json = $simpay->client()->createTransaction($payload);
@@ -382,7 +382,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $attemptService = new SimPayPaymentAttemptService();
+        $attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
         $attemptService->registerAttempt($order, $transactionId, 'blik-oneclick', 'checkout');
 
         // Send OneClick request (no code, using alias uuid)
@@ -462,7 +462,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
         }
 
         /** @var SimPayPaymentAttemptService $attemptService */
-        $attemptService = new SimPayPaymentAttemptService();
+        $attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
         $attempt = $attemptService->findByTransactionId($transactionId);
 
         if (!$attempt || (int) ($attempt['id_order'] ?? 0) !== $orderId) {

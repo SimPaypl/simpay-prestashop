@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Service\Routing\Router;
+use SimPay\SDK\SimPay as SimPaySDK;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
-use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
+use SimPaypl\PrestaShop\Helper\SimPayChannelCache;
+use SimPaypl\PrestaShop\Helper\SimPayLogger;
+use SimPaypl\PrestaShop\PaymentClientFactory;
+use SimPaypl\PrestaShop\Service\SimPayBlikAliasService;
+use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
+use SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder;
 use SimPaypl\PrestaShop\Service\SimPayRefundService;
+use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
 use SimPaypl\PrestaShop\Update\UpdateChecker;
 
 if (!defined('_PS_VERSION_')) {
@@ -31,11 +38,51 @@ final class Simpay extends PaymentModule
         'displayAdminOrderMain',
     ];
 
+    /** @var array<string, object> */
+    private array $services = [];
+
+    /**
+     * Module-level service locator.
+     * Works in ALL contexts: hooks, front controllers, admin controllers, CLI.
+     * Independent of Symfony DI container and its cache.
+     *
+     * @template T of object
+     * @param class-string<T> $className
+     * @return T
+     */
+    public function getService(string $className): object
+    {
+        if (isset($this->services[$className])) {
+            return $this->services[$className];
+        }
+
+        $this->services[$className] = match ($className) {
+            SimPaySDK::class => (new PaymentClientFactory(
+                new \PrestaShop\PrestaShop\Adapter\Configuration()
+            ))(),
+            SimPayPaymentAttemptService::class => new SimPayPaymentAttemptService(),
+            SimPayRefundService::class => new SimPayRefundService($this->getService(SimPaySDK::class)),
+            SimPayBlikAliasService::class => new SimPayBlikAliasService(),
+            SimPayChannelCache::class => new SimPayChannelCache($this->getService(SimPaySDK::class)),
+            SimPayPaymentRequestBuilder::class => new SimPayPaymentRequestBuilder(
+                new \PrestaShop\PrestaShop\Adapter\LegacyContext()
+            ),
+            SimPayRetryPaymentService::class => new SimPayRetryPaymentService($this),
+            UpdateChecker::class => new UpdateChecker($this),
+            SimPayLogger::class => new SimPayLogger(),
+            default => throw new \InvalidArgumentException(
+                sprintf('Unknown service "%s" requested from SimPay module.', $className)
+            ),
+        };
+
+        return $this->services[$className];
+    }
+
     public function __construct()
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.1';
+        $this->version = '1.2.2';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -110,13 +157,21 @@ final class Simpay extends PaymentModule
             return false;
         }
 
+        $this->clearSymfonyCache();
+
         return true;
     }
 
     public function enable($force_all = false): bool
     {
-        return parent::enable($force_all)
+        $result = parent::enable($force_all)
             && $this->ensureMailTemplate('simpay_retry_payment');
+
+        if ($result) {
+            $this->clearSymfonyCache();
+        }
+
+        return $result;
     }
 
     public function uninstall(): bool
@@ -124,6 +179,8 @@ final class Simpay extends PaymentModule
         if (!parent::uninstall()) {
             return false;
         }
+
+        $this->clearSymfonyCache();
 
         // leave order states and tables intact to preserve IDs/data
         return true;
@@ -234,7 +291,7 @@ final class Simpay extends PaymentModule
         }
 
         /** @var UpdateChecker $updateChecker */
-        $updateChecker = $this->get('prestashop.module.simpay.update_checker');
+        $updateChecker = $this->getService(UpdateChecker::class);
         $update = $updateChecker->getUpdateIfAvailable();
 
         if ($update && isset($this->context->controller) && in_array($controller, ['AdminModules', 'AdminModulesManage', 'AdminModulesNotifications'], true)) {
@@ -377,7 +434,7 @@ final class Simpay extends PaymentModule
 
         // Available from cache
         /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $cache */
-        $cache = $this->get('prestashop.module.simpay.channel_cache');
+        $cache = $this->getService(SimPayChannelCache::class);
         $available = $cache->get();
 
         if (empty($available)) {
@@ -423,7 +480,7 @@ final class Simpay extends PaymentModule
         }
 
         /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $cache */
-        $cache = $this->get('prestashop.module.simpay.channel_cache');
+        $cache = $this->getService(SimPayChannelCache::class);
         $available = $cache->get();
 
         if (empty($available)) {
@@ -507,7 +564,7 @@ final class Simpay extends PaymentModule
     public function getContent(): void
     {
         /** @var UpdateChecker $updateChecker */
-        $updateChecker = $this->get('prestashop.module.simpay.update_checker');
+        $updateChecker = $this->getService(UpdateChecker::class);
         $updateChecker->getUpdateIfAvailable();
 
         /** @var Router $router */
@@ -681,14 +738,14 @@ final class Simpay extends PaymentModule
     public function hookDisplayOrderDetail(array $params): string
     {
         /** @var SimPayRetryPaymentService $retryService */
-        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        $retryService = $this->getService(SimPayRetryPaymentService::class);
         return $retryService->hookDisplayOrderDetail($params, __FILE__);
     }
 
     public function hookActionGetExtraMailTemplateVars(array &$params): void
     {
         /** @var SimPayRetryPaymentService $retryService */
-        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        $retryService = $this->getService(SimPayRetryPaymentService::class);
         $retryService->hookActionGetExtraMailTemplateVars($params);
     }
 
@@ -699,11 +756,11 @@ final class Simpay extends PaymentModule
         }
 
         /** @var SimPayPaymentAttemptService $attemptService */
-        $attemptService = $this->get('prestashop.module.simpay.payment_attempt_service');
+        $attemptService = $this->getService(SimPayPaymentAttemptService::class);
         /** @var SimPayRefundService $refundService */
-        $refundService = $this->get('prestashop.module.simpay.refund_service');
+        $refundService = $this->getService(SimPayRefundService::class);
         /** @var SimPayLogger $simpayLogger */
-        $simpayLogger = $this->get('prestashop.module.simpay.payment_logger');
+        $simpayLogger = $this->getService(SimPayLogger::class);
 
         $order = new Order((int) $params['id_order']);
         $currency = new Currency((int) $order->id_currency);
@@ -879,5 +936,23 @@ final class Simpay extends PaymentModule
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
 
         return Db::getInstance()->execute($sql);
+    }
+
+    /**
+     * Clear Symfony container cache to force re-registration of module services.
+     */
+    private function clearSymfonyCache(): void
+    {
+        try {
+            if (class_exists('Tools') && method_exists('Tools', 'clearSf2Cache')) {
+                Tools::clearSf2Cache();
+            }
+        } catch (\Throwable $e) {
+            // Cache clearing is best-effort — don't break install/enable on failure
+            PrestaShopLogger::addLog(
+                'SimPay: Failed to clear Symfony cache: ' . $e->getMessage(),
+                2
+            );
+        }
     }
 }

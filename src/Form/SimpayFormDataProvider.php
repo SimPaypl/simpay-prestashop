@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SimPaypl\PrestaShop\Form;
 
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Form\FormDataProviderInterface;
 use SimPaypl\PrestaShop\Update\UpdateChecker;
 
@@ -37,14 +36,11 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
         // Update info (optional)
         $data['update_info'] = null;
         try {
-            $container = SymfonyContainer::getInstance();
-            if ($container) {
-                /** @var UpdateChecker $updateChecker */
-                $updateChecker = $container->get('prestashop.module.simpay.update_checker');
-                $update = $updateChecker->getUpdateIfAvailable();
-                if ($update) {
-                    $data['update_info'] = $update;
-                }
+            $module = \Module::getInstanceByName('simpay');
+            $updateChecker = new UpdateChecker($module ?: null);
+            $update = $updateChecker->getUpdateIfAvailable();
+            if ($update) {
+                $data['update_info'] = $update;
             }
         } catch (\Throwable $e) {
             $data['update_info'] = null;

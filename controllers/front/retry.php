@@ -25,7 +25,7 @@ final class SimpayRetryModuleFrontController extends ModuleFrontController
         }
 
         /** @var SimPayRetryPaymentService $retryService */
-        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        $retryService = $this->module->getService(SimPayRetryPaymentService::class);
         // Validate retry token (guest-safe)
         if (!$retryService->isValidRetryToken($order, $token)) {
             Tools::redirect('index.php');

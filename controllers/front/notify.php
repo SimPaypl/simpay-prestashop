@@ -25,8 +25,8 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
     public function init(): void
     {
         parent::init();
-        $this->attemptService = $this->get('prestashop.module.simpay.payment_attempt_service');
-        $this->refundService = $this->get('prestashop.module.simpay.refund_service');
+        $this->attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
+        $this->refundService = $this->module->getService(SimPayRefundService::class);
     }
 
     public function postProcess(): void
@@ -78,10 +78,8 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         }
 
         // IP allowlist check (only log result)
+        $simpay = $this->module->getService(SimPaySDK::class);
         if ((bool) Configuration::get(SimpayDataConfiguration::IPN_CHECK_IP)) {
-            /** @var SimPaySDK $simpay */
-            $simpay = $this->get('prestashop.module.simpay.front.payment_client');
-
             try {
                 $simpay->handleIpn(
                     payload: $payload,
@@ -102,8 +100,6 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
                 );
             }
         } else {
-            /** @var SimPaySDK $simpay */
-            $simpay = $this->get('prestashop.module.simpay.front.payment_client');
 
             try {
                 $simpay->handleIpn(
@@ -360,7 +356,7 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
         ]);
 
         /** @var SimPayBlikAliasService $aliasService */
-        $aliasService = $this->get('prestashop.module.simpay.blik_alias_service');
+        $aliasService = $this->module->getService(SimPayBlikAliasService::class);
 
         if ($status === 'alias_active') {
             $activated = $aliasService->activateAlias($aliasValue, $aliasUuid, $status);

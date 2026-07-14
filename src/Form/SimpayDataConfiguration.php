@@ -75,17 +75,18 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      */
     public function updateConfiguration(array $configuration)
     {
-        if (!$this->validateConfiguration($configuration)) {
-            return ['Invalid configuration'];
+        $missing = $this->getMissingFields($configuration);
+        if (!empty($missing)) {
+            return [sprintf('Invalid configuration — missing fields: %s', implode(', ', $missing))];
         }
 
         $this->configuration->set(self::API_PASSWORD, $configuration['api_password']);
         $this->configuration->set(self::SERVICE_ID, $configuration['service_id']);
         $this->configuration->set(self::SERVICE_IPN_SIGNATURE_KEY, $configuration['service_ipn_signature_key']);
         $this->configuration->set(self::SHOW_PAYMENT_METHODS_IN_MAIN, $configuration['show_payment_methods_in_main']);
-        $this->configuration->set(self::PAYMENT_METHODS_LIST_IN_MAIN, $configuration['payment_methods_list_in_main']);
+            $this->configuration->set(self::PAYMENT_METHODS_LIST_IN_MAIN, $configuration['payment_methods_list_in_main'] ?? '');
         $this->configuration->set(self::SHOW_SEPARATE_PAYMENT_METHODS, $configuration['show_separate_payment_methods']);
-        $this->configuration->set(self::SEPARATE_PAYMENT_METHODS_LIST, $configuration['separate_payment_methods_list']);
+        $this->configuration->set(self::SEPARATE_PAYMENT_METHODS_LIST, $configuration['separate_payment_methods_list'] ?? '');
         $this->configuration->set(self::SHOW_BLIK_IN_WIDGET, $configuration['show_blik_in_widget']);
         $this->configuration->set(self::BLIK_ONECLICK_ENABLED, $configuration['blik_oneclick_enabled'] ?? false);
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
@@ -94,19 +95,37 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     }
 
     /**
-     * @param array<string, string> $configuration
+     * @param array<string, mixed> $configuration
+     * @return array<string> List of missing field names (empty = valid)
+     */
+    public function getMissingFields(array $configuration): array
+    {
+        $required = [
+            'api_password',
+            'service_id',
+            'service_ipn_signature_key',
+            'show_payment_methods_in_main',
+            'show_separate_payment_methods',
+            'show_blik_in_widget',
+            'ipn_check_ip',
+            'repayment_enabled',
+        ];
+
+        $missing = [];
+        foreach ($required as $field) {
+            if (!isset($configuration[$field])) {
+                $missing[] = $field;
+            }
+        }
+
+        return $missing;
+    }
+
+    /**
+     * @param array<string, mixed> $configuration
      */
     public function validateConfiguration(array $configuration): bool
     {
-        return isset($configuration['api_password'])
-            && isset($configuration['service_id'])
-            && isset($configuration['service_ipn_signature_key'])
-            && isset($configuration['show_payment_methods_in_main'])
-            && isset($configuration['payment_methods_list_in_main'])
-            && isset($configuration['show_separate_payment_methods'])
-            && isset($configuration['separate_payment_methods_list'])
-            && isset($configuration['show_blik_in_widget'])
-            && isset($configuration['ipn_check_ip'])
-            && isset($configuration['repayment_enabled']);
+        return empty($this->getMissingFields($configuration));
     }
 }

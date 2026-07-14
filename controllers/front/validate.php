@@ -6,6 +6,9 @@ use SimPaypl\PrestaShop\Service\SimPayPaymentAttemptService;
 use SimPaypl\PrestaShop\Service\SimPayRetryPaymentService;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
+use SimPaypl\PrestaShop\Helper\SimPayChannelCache;
+use SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder;
+use SimPay\SDK\SimPay as SimPaySDK;
 
 final class SimpayValidateModuleFrontController extends ModuleFrontController
 {
@@ -47,7 +50,7 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         /** @var Currency $currency */
         $currency = $this->context->currency;
 
-        $attemptService = new SimPayPaymentAttemptService();
+        $attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
 
         $customer = new Customer($cart->id_customer);
         if (false === Validate::isLoadedObject($customer)) {
@@ -55,16 +58,16 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             return;
         }
 
-        /** @var SimPay $simpay */
-        $simpay = $this->get('prestashop.module.simpay.front.payment_client');
+        /** @var SimPaySDK $simpay */
+        $simpay = $this->module->getService(SimPaySDK::class);
 
         $method = Tools::getValue('method');
         if (!$method && Tools::getValue('simpay_method_choice')) {
             $method = Tools::getValue('simpay_method_choice');
         }
 
-        /** @var \SimPaypl\PrestaShop\Helper\SimPayChannelCache $channelCache */
-        $channelCache = $this->get('prestashop.module.simpay.channel_cache');
+        /** @var SimPayChannelCache $channelCache */
+        $channelCache = $this->module->getService(SimPayChannelCache::class);
         $channels = $channelCache->get();
         $allowedChannelIds = array_column($channels, 'id');
 
@@ -72,8 +75,8 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             $method = null;
         }
 
-        /** @var \SimPaypl\PrestaShop\Service\SimPayPaymentRequestBuilder $builder */
-        $builder = $this->get('prestashop.module.simpay.payment_request_builder');
+        /** @var SimPayPaymentRequestBuilder $builder */
+        $builder = $this->module->getService(SimPayPaymentRequestBuilder::class);
         $builderOrderId = $this->retryOrder ? (int) $this->retryOrder->id : (int) $this->module->currentOrder;
         $payload = $builder->build($cart, $customer->secure_key, $method ?: null, $builderOrderId);
 
@@ -229,7 +232,7 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
 
         $retryToken = (string) Tools::getValue('retry_token');
         /** @var SimPayRetryPaymentService $retryService */
-        $retryService = $this->get('prestashop.module.simpay.retry_payment_service');
+        $retryService = $this->module->getService(SimPayRetryPaymentService::class);
 
         $order = new Order($retryOrderId);
         if (
