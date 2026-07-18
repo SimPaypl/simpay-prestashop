@@ -12,8 +12,10 @@ use Currency;
 use Customer;
 use Db;
 use Link;
+use Configuration;
 use PrestaShop\PrestaShop\Adapter\LegacyContext;
 use PrestaShopBundle\Translation\TranslatorComponent;
+use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use Tools;
 
 final class SimPayPaymentRequestBuilder
@@ -91,6 +93,11 @@ final class SimPayPaymentRequestBuilder
 
         if (!empty($channel)) {
             $payload['directChannel'] = $channel;
+        }
+
+        $commissionMode = (string) (Configuration::get(SimpayDataConfiguration::COMMISSION_MODE) ?: 'merchant');
+        if ($commissionMode === 'payer') {
+            $payload['commissionMode'] = 'payer';
         }
 
         // Add billing/shipping if available

@@ -4,7 +4,121 @@ $(function () {
     const SELECTOR_BTN    = '#payment-confirmation button';
     const SELECTOR_PAYOPT = 'input[name="payment-option"]';
 
-    // Helpers
+    // ── Commission notice ──────────────────────────────────────────────
+    const $notice = $('#simpay-commission-notice');
+    let commissionMap = {};
+    let cartTotal = 0;
+    let msgGeneric = '';
+    let msgFee = '';
+
+    if ($notice.length) {
+        try { commissionMap = JSON.parse($notice.attr('data-commission-map') || '{}'); } catch(e) {}
+        cartTotal = parseFloat($notice.attr('data-cart-total') || '0');
+        msgGeneric = $notice.attr('data-msg-generic') || '';
+        msgFee = $notice.attr('data-msg-fee') || '';
+
+        // Move notice to bottom of payment section (after all payment options)
+        var $paymentOptions = $('#payment-option-forms, .payment-options, #checkout-payment-step .content');
+        if ($paymentOptions.length) {
+            $paymentOptions.last().after($notice);
+        }
+    }
+
+    function formatAmount(amount) {
+        return amount.toFixed(2).replace('.', ',');
+    }
+
+    function updateCommissionNotice() {
+        if (!$notice.length) return;
+
+        var selectedMethod = null;
+        var isSimpayMain = false;
+
+        // Check if a SimPay separate method is selected (payment-option radio for simpay method)
+        var payOptId = getSelectedPaymentOptionId();
+        if (payOptId) {
+            // Check if this is a separate SimPay method (has data-module-name="simpay" or similar)
+            var $option = $('#' + payOptId);
+            var $form = $('#pay-with-' + payOptId + '-form, #' + payOptId + '-additional-information');
+
+            // Separate method: look for hidden input with method value
+            var $methodInput = $form.find('input[name="method"]');
+            if ($methodInput.length) {
+                selectedMethod = $methodInput.val();
+            }
+
+            // Fallback: check simpay_method_choice hidden input (e.g. BLIK widget)
+            if (!selectedMethod) {
+                var $choiceInput = $form.find('input[name="simpay_method_choice"][type="hidden"]');
+                if ($choiceInput.length) {
+                    selectedMethod = $choiceInput.val();
+                }
+            }
+
+            // Check URL for method param in the main payment form (not additional info)
+            if (!selectedMethod) {
+                var $mainForm = $('#pay-with-' + payOptId + '-form');
+                var action = $mainForm.find('form').attr('action') || '';
+                if (!action) {
+                    action = $option.closest('.payment-option').find('form').attr('action') || '';
+                }
+                var match = action.match(/[?&]method=([^&]+)/);
+                if (match) {
+                    selectedMethod = decodeURIComponent(match[1]);
+                }
+            }
+
+            // Check if it's the main SimPay gateway (has payment grid)
+            if ($form.find('.simpay-payment-channels').length > 0 || $form.find('[data-simpay-form]').length > 0) {
+                isSimpayMain = true;
+                // Check if a method is selected inside the grid
+                var $gridChoice = $form.find(SELECTOR_METHOD + ':checked');
+                if ($gridChoice.length) {
+                    selectedMethod = $gridChoice.val();
+                } else {
+                    selectedMethod = null;
+                }
+            }
+
+            // Check if this payment option belongs to simpay module
+            var isSimpay = $form.find('.simpay-wrapper, .simpay-blik-wrapper').length > 0
+                || $form.find('[data-simpay-form]').length > 0
+                || selectedMethod !== null
+                || isSimpayMain;
+
+            if (!isSimpay) {
+                $notice.hide();
+                return;
+            }
+        } else {
+            $notice.hide();
+            return;
+        }
+
+        // Show the notice
+        var $text = $('#simpay-commission-text');
+
+        if (selectedMethod && commissionMap[selectedMethod] && commissionMap[selectedMethod] > 0) {
+            // Specific method selected → show exact fee
+            var percent = commissionMap[selectedMethod];
+            var amount = Math.round(cartTotal * percent) / 100;
+            $text.html(msgFee + ': <strong>' + formatAmount(amount) + ' PLN</strong> <small>(' + percent.toFixed(2).replace('.', ',') + '%)</small>');
+            $notice.show();
+        } else if (isSimpayMain && !selectedMethod) {
+            // Main gateway, no method selected → generic message
+            $text.html(msgGeneric);
+            $notice.show();
+        } else if (selectedMethod && (!commissionMap[selectedMethod] || commissionMap[selectedMethod] === 0)) {
+            // Method with 0% commission
+            $notice.hide();
+        } else {
+            // Separate method without specific commission data → generic
+            $text.html(msgGeneric);
+            $notice.show();
+        }
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────
     function getSubmitBtn() {
         return $(SELECTOR_BTN).first();
     }
@@ -101,10 +215,11 @@ $(function () {
 
     // --- Bindings ---
 
-    // 1) Change on SimPay radio -> update active + validate
+    // 1) Change on SimPay radio -> update active + validate + commission
     $(document).on('change', SELECTOR_METHOD, function () {
         updateActive($(this));
         validateSimpayBeforeSubmit();
+        updateCommissionNotice();
     });
 
     // 2) Change on terms checkbox -> validate (but only affects button if SimPay active)
@@ -112,7 +227,7 @@ $(function () {
         validateSimpayBeforeSubmit();
     });
 
-    // 3) Change main payment method -> validate (important!)
+    // 3) Change main payment method -> validate + commission (important!)
     $(document).on('change', SELECTOR_PAYOPT, function () {
         // When switching to SimPay, set active style for prechecked tile
         const id = getSelectedPaymentOptionId();
@@ -122,6 +237,7 @@ $(function () {
             if ($checked.length) updateActive($checked);
         }
         validateSimpayBeforeSubmit();
+        updateCommissionNotice();
     });
 
     // Initial sync on load
@@ -133,5 +249,6 @@ $(function () {
             if ($checked.length) updateActive($checked);
         }
         validateSimpayBeforeSubmit();
+        updateCommissionNotice();
     })();
 });

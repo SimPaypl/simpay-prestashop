@@ -44,7 +44,12 @@ final class SimPayChannelCache
         $cache = $this->readCache();
 
         if (!$forceRefresh && $this->isFresh($cache)) {
-            return $cache['channels'];
+            // Auto-refresh if cache is missing 'commission' field (schema migration)
+            if (!empty($cache['channels']) && !array_key_exists('commission', $cache['channels'][0] ?? [])) {
+                $forceRefresh = true;
+            } else {
+                return $cache['channels'];
+            }
         }
 
         try {
@@ -141,6 +146,7 @@ final class SimPayChannelCache
     {
         $rawChannels = $this->simpay->client()->getChannels();
 
+
         if (!is_array($rawChannels)) {
             return [];
         }
@@ -171,6 +177,7 @@ final class SimPayChannelCache
                 'type' => (string) $type,
                 'img' => isset($c['img']) ? (string) $c['img'] : null,
                 'amounts' => (array) $amounts,
+                'commission' => isset($c['commission']) ? (float) $c['commission'] : 0.0,
             ];
         }
 

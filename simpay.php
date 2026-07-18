@@ -82,7 +82,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.2';
+        $this->version = '1.2.3';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -339,6 +339,8 @@ final class Simpay extends PaymentModule
         $showPaymentMethods = (bool)Configuration::get(SimpayDataConfiguration::SHOW_PAYMENT_METHODS_IN_MAIN);
         $showSeparateMethods = (bool) Configuration::get(SimpayDataConfiguration::SHOW_SEPARATE_PAYMENT_METHODS);
         $showBlikInWidget = (bool) Configuration::get(SimpayDataConfiguration::SHOW_BLIK_IN_WIDGET);
+        $commissionMode = (string) (Configuration::get(SimpayDataConfiguration::COMMISSION_MODE) ?: 'merchant');
+        $isPayerCommission = ($commissionMode === 'payer');
         $token = Tools::getToken('simpay');
         $cartTotalWithShipping = (float) $cart->getOrderTotal(true, Cart::BOTH);
 
@@ -394,16 +396,46 @@ final class Simpay extends PaymentModule
             'simpay_module_name' => $this->name,
             'simpay_action' => $this->context->link->getModuleLink($this->name, 'validate', [], true),
             'simpay_token' => $token,
-            'simpay_show_methods' => $showPaymentMethods
+            'simpay_show_methods' => $showPaymentMethods,
+            'simpay_payer_commission' => $isPayerCommission,
+            'simpay_cart_total' => $cartTotalWithShipping,
         ]);
 
         $gridHtml = $this->fetch('module:' . $this->name . '/views/templates/hook/payment_grid.tpl');
+
+        // Build commission map for all channels (used by commission_notice.tpl + JS)
+        $commissionNoticeHtml = '';
+        if ($isPayerCommission) {
+            /** @var SimPayChannelCache $channelCache */
+            $channelCache = $this->getService(SimPayChannelCache::class);
+            $allChannels = $channelCache->get();
+            $commissionMap = [];
+            foreach ($allChannels as $ch) {
+                $chId = (string) ($ch['id'] ?? '');
+                $commission = isset($ch['commission']) ? (float) $ch['commission'] : 0.0;
+                if ($chId !== '' && $commission > 0) {
+                    $commissionMap[$chId] = $commission;
+                }
+            }
+
+            $this->context->smarty->assign([
+                'simpay_commission_map_json' => json_encode($commissionMap),
+                'simpay_cart_total' => $cartTotalWithShipping,
+                'simpay_commission_msg_generic' => $this->trans(
+                    'A transaction fee will be added to the payment amount. The exact amount will be shown on the payment gateway.',
+                    [],
+                    'Modules.Simpay.Shop'
+                ),
+                'simpay_commission_msg_fee' => $this->trans('Transaction fee', [], 'Modules.Simpay.Shop'),
+            ]);
+            $commissionNoticeHtml = $this->fetch('module:' . $this->name . '/views/templates/hook/commission_notice.tpl');
+        }
 
         $methods[] = (new PaymentOption())
             ->setModuleName($this->name)
             ->setCallToActionText($this->trans('Pay by transfer with SimPay', [], 'Modules.Simpay.Shop'))
             ->setAction($this->context->link->getModuleLink((string)$this->name, 'validate', [], true))
-            ->setForm($gridHtml)
+            ->setForm($gridHtml . $commissionNoticeHtml)
             ->setLogo($this->_path . 'views/img/option/simpay.svg');
 
         return $methods;

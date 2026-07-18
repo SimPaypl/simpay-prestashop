@@ -17,6 +17,7 @@ Integracja jest w pełni osadzona w ścieżce zakupowej, a dodatkowo zapewnia po
     - [Dane uwierzytelniające](#dane-uwierzytelniające)
     - [Adresy komunikacji (webhook / notify)](#adresy-komunikacji-webhook--notify)
     - [Metody płatności i ich kolejność](#metody-płatności-i-ich-kolejność)
+    - [Tryb prowizji (merchant / payer)](#tryb-prowizji-merchant--payer)
     - [Tryb testowy i produkcyjny](#tryb-testowy-i-produkcyjny)
     - [Ponowienie płatności (retry)](#ponowienie-płatności-retry)
 - [Back Office – transakcje, zwroty i logi](#back-office--transakcje-i-logi)
@@ -46,6 +47,7 @@ Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 - **płatność BLIK 0** – klient pozostaje na stronie koszyka sklepu i wpisuje 6-cyfrowy kod BLIK wygenerowany w aplikacji mobilnej banku.
 - obsługę multisklepu (multi-store) – konfiguracja modułu jest niezależna dla każdego sklepu, a ustawienia metod płatności są zapisywane osobno.
 - możliwość wykonywania **zwrotów pełnych i częściowych** bezpośrednio z poziomu szczegółów zamówienia w Back Office.
+- wybór **trybu prowizji** – sklep lub kupujący pokrywa opłatę transakcyjną, z dynamicznym wyświetlaniem kwoty prowizji w checkout.
 
 ---
 
@@ -154,6 +156,25 @@ Dodatkowo moduł pozwala na:
 
 - wyświetlanie **BLIK** w formie widżetu,
 - włączanie lub wyłączanie **ponawiania płatności**.
+
+---
+
+### Tryb prowizji (merchant / payer)
+
+Moduł umożliwia wybór, kto pokrywa prowizję transakcyjną:
+
+- **Sklep (merchant)** – domyślnie. Prowizja jest ponoszona przez sprzedawcę. Klient nie widzi żadnych dodatkowych opłat.
+- **Kupujący (payer)** – prowizja jest doliczana do kwoty płatności po stronie bramki SimPay.
+
+Po wybraniu trybu **Kupujący** moduł automatycznie:
+
+1. Pobiera stawki prowizji dla każdego kanału płatności z API SimPay (np. BLIK – 1,49%).
+2. Wyświetla pod sekcją płatności informację o wysokości opłaty transakcyjnej.
+3. Treść zmienia się dynamicznie w zależności od wybranej metody płatności – klient widzi dokładną kwotę prowizji obliczoną na podstawie wartości koszyka.
+4. Jeśli klient wybierze ogólną bramkę SimPay (bez konkretnej metody), wyświetlany jest komunikat informujący, że opłata zostanie pokazana na stronie bramki płatności.
+5. Przekazuje parametr do API SimPay przy tworzeniu transakcji.
+
+Ustawienie znajduje się w konfiguracji modułu w sekcji **Konfiguracja połączenia SimPay ze sklepem** → **Prowizja płacona przez**.
 
 ---
 

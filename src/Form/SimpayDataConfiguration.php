@@ -20,6 +20,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const BLIK_ONECLICK_ENABLED = 'SIMPAY_BLIK_ONECLICK_ENABLED';
     public const IPN_CHECK_IP = 'SIMPAY_IPN_CHECK_IP';
     public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
+    public const COMMISSION_MODE = 'SIMPAY_COMMISSION_MODE';
 
     private ConfigurationInterface $configuration;
 
@@ -38,7 +39,8 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     separate_payment_methods_list: string,
      *     show_blik_in_widget: boolean,
      *     ipn_check_ip: boolean,
-     *     repayment_enabled: boolean
+     *     repayment_enabled: boolean,
+     *     commission_mode: string
      *  }
      */
     public function getConfiguration(): array
@@ -55,6 +57,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'blik_oneclick_enabled' => (bool)$this->configuration->get(self::BLIK_ONECLICK_ENABLED),
             'ipn_check_ip' => (bool)$this->configuration->get(self::IPN_CHECK_IP),
             'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
+            'commission_mode' => (string)($this->configuration->get(self::COMMISSION_MODE) ?: 'merchant'),
         ];
     }
 
@@ -69,7 +72,8 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     separate_payment_methods_list: string,
      *     show_blik_in_widget: boolean,
      *     ipn_check_ip: boolean,
-     *     repayment_enabled: boolean
+     *     repayment_enabled: boolean,
+     *     commission_mode: string
      * } $configuration
      * @return array<string>
      */
@@ -84,13 +88,14 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::SERVICE_ID, $configuration['service_id']);
         $this->configuration->set(self::SERVICE_IPN_SIGNATURE_KEY, $configuration['service_ipn_signature_key']);
         $this->configuration->set(self::SHOW_PAYMENT_METHODS_IN_MAIN, $configuration['show_payment_methods_in_main']);
-            $this->configuration->set(self::PAYMENT_METHODS_LIST_IN_MAIN, $configuration['payment_methods_list_in_main'] ?? '');
+        $this->configuration->set(self::PAYMENT_METHODS_LIST_IN_MAIN, $configuration['payment_methods_list_in_main'] ?? '');
         $this->configuration->set(self::SHOW_SEPARATE_PAYMENT_METHODS, $configuration['show_separate_payment_methods']);
         $this->configuration->set(self::SEPARATE_PAYMENT_METHODS_LIST, $configuration['separate_payment_methods_list'] ?? '');
         $this->configuration->set(self::SHOW_BLIK_IN_WIDGET, $configuration['show_blik_in_widget']);
         $this->configuration->set(self::BLIK_ONECLICK_ENABLED, $configuration['blik_oneclick_enabled'] ?? false);
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
         $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
+        $this->configuration->set(self::COMMISSION_MODE, $configuration['commission_mode'] ?? 'merchant');
         return [];
     }
 

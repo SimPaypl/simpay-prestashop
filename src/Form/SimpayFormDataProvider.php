@@ -26,6 +26,7 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      * separate_payment_methods_list: string,
      * show_blik_in_widget: boolean,
      * repayment_enabled: boolean,
+     * commission_mode: string,
      * update_info: ?array
      * }
      */
@@ -59,7 +60,8 @@ final class SimpayFormDataProvider implements FormDataProviderInterface
      *      show_separate_payment_methods: boolean,
      *      separate_payment_methods_list: string,
      *      show_blik_in_widget: boolean,
-     *      repayment_enabled: boolean
+     *      repayment_enabled: boolean,
+     *      commission_mode: string
      *   } $data
      * @return array<string>
      */

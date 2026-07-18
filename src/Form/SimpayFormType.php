@@ -7,6 +7,7 @@ namespace SimPaypl\PrestaShop\Form;
 use Link;
 use PrestaShopBundle\Form\Admin\Type\TranslatorAwareType;
 use PrestaShopBundle\Form\Admin\Type\SwitchType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -128,6 +129,21 @@ final class SimpayFormType extends TranslatorAwareType
                     'Modules.Simpay.Admin'
                 ),
                 'required' => false,
+            ])
+            ->add('commission_mode', ChoiceType::class, [
+                'label' => $this->trans(
+                    'Commission paid by',
+                    'Modules.Simpay.Admin'
+                ),
+                'help' => $this->trans(
+                    'Choose who pays the transaction commission — the merchant or the payer.',
+                    'Modules.Simpay.Admin'
+                ),
+                'choices' => [
+                    $this->trans('Merchant', 'Modules.Simpay.Admin') => 'merchant',
+                    $this->trans('Payer', 'Modules.Simpay.Admin') => 'payer',
+                ],
+                'required' => true,
             ]);
     }
 

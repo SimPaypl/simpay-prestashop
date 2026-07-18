@@ -2,7 +2,7 @@
 <module>
     <name>simpay</name>
     <displayName><![CDATA[Płatności SimPay]]></displayName>
-    <version><![CDATA[1.2.2]]></version>
+    <version><![CDATA[1.2.3]]></version>
     <description><![CDATA[Połącz sw&oacute;j sklep z płatnościami SimPay]]></description>
     <author><![CDATA[Payments Solution Sp. z o.o.]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
