@@ -1,5 +1,10 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
 
+
+{% form_theme configurationForm
+    '@PrestaShop/Admin/TwigTemplateForm/prestashop_ui_kit.html.twig'
+%}
+
 {% block content %}
     {% set updateInfo = simpay_update_info|default(configurationForm.vars.data.update_info|default(null)) %}
 
@@ -35,6 +40,7 @@
                         {{ form_row(configurationForm.service_ipn_signature_key) }}
                         {{ form_row(configurationForm.ipn_check_ip) }}
                         {{ form_row(configurationForm.commission_mode) }}
+                        {{ form_row(configurationForm.commission_split, { row_attr: { class: 'd-none' } }) }}
                     </div>
                 </div>
             </div>

@@ -1,4 +1,18 @@
 $(document).ready(() => {
+    // ── Commission split visibility ────────────────────────────────────
+    const $commissionMode = $('select[name="form[commission_mode]"]');
+    const $splitField = $('input[name="form[commission_split]"]');
+    const $splitRow = $splitField.closest('.form-group');
+
+    if ($commissionMode.length && $splitRow.length) {
+        const toggleSplit = () => {
+            $splitRow.toggleClass('d-none', $commissionMode.val() !== 'split');
+        };
+        toggleSplit();
+        $commissionMode.on('change', toggleSplit);
+    }
+
+    // ── Payment methods ────────────────────────────────────────────────
     const $mainRadios = $('input[name="form[show_payment_methods_in_main]"]');
     const $separateRadios = $('input[name="form[show_separate_payment_methods]"]');
     const $mainBlock = $('#simpay-main-methods-block');

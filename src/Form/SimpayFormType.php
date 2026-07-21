@@ -9,10 +9,12 @@ use PrestaShopBundle\Form\Admin\Type\TranslatorAwareType;
 use PrestaShopBundle\Form\Admin\Type\SwitchType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Range;
 
 final class SimpayFormType extends TranslatorAwareType
 {
@@ -136,14 +138,33 @@ final class SimpayFormType extends TranslatorAwareType
                     'Modules.Simpay.Admin'
                 ),
                 'help' => $this->trans(
-                    'Choose who pays the transaction commission — the merchant or the payer.',
+                    'Choose who pays the transaction commission — the merchant, the payer, or split between both.',
                     'Modules.Simpay.Admin'
                 ),
                 'choices' => [
                     $this->trans('Merchant', 'Modules.Simpay.Admin') => 'merchant',
                     $this->trans('Payer', 'Modules.Simpay.Admin') => 'payer',
+                    $this->trans('Split', 'Modules.Simpay.Admin') => 'split',
                 ],
                 'required' => true,
+            ])
+            ->add('commission_split', IntegerType::class, [
+                'label' => $this->trans(
+                    'Payer commission share (%)',
+                    'Modules.Simpay.Admin'
+                ),
+                'help' => $this->trans(
+                    'Percentage of the commission covered by the payer. E.g. 50 = payer pays half, merchant pays the other half.',
+                    'Modules.Simpay.Admin'
+                ),
+                'required' => false,
+                'constraints' => [
+                    new Range(['min' => 1, 'max' => 99]),
+                ],
+                'attr' => [
+                    'min' => 1,
+                    'max' => 99,
+                ],
             ]);
     }
 

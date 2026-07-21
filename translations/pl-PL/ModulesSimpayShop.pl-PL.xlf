@@ -192,6 +192,16 @@
         <target>Zapłać z %method%</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="5d68da24ed1e1ca63defae96b9995a85">
+        <source>A transaction fee will be added to the payment amount. The exact amount will be shown on the payment gateway.</source>
+        <target>Do kwoty płatności zostanie doliczona opłata transakcyjna. Dokładna kwota zostanie wyświetlona na stronie bramki płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6b0116db3d58a2130643c26f1c017f74">
+        <source>Transaction fee</source>
+        <target>Opłata transakcyjna</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="7bb28e4afd9fa2849ece7e460be697a5">
         <source>Pay by transfer with SimPay</source>
         <target>Zapłać przelewem z SimPay</target>

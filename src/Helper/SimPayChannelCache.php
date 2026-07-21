@@ -44,8 +44,8 @@ final class SimPayChannelCache
         $cache = $this->readCache();
 
         if (!$forceRefresh && $this->isFresh($cache)) {
-            // Auto-refresh if cache is missing 'commission' field (schema migration)
-            if (!empty($cache['channels']) && !array_key_exists('commission', $cache['channels'][0] ?? [])) {
+            // Auto-refresh if cache is missing 'commissions' field (schema migration)
+            if (!empty($cache['channels']) && !array_key_exists('commissions', $cache['channels'][0] ?? [])) {
                 $forceRefresh = true;
             } else {
                 return $cache['channels'];
@@ -178,6 +178,11 @@ final class SimPayChannelCache
                 'img' => isset($c['img']) ? (string) $c['img'] : null,
                 'amounts' => (array) $amounts,
                 'commission' => isset($c['commission']) ? (float) $c['commission'] : 0.0,
+                'commissions' => [
+                    'percentage' => isset($c['commissions']['percentage']) ? (float) $c['commissions']['percentage'] : (isset($c['commission']) ? (float) $c['commission'] : 0.0),
+                    'fixed' => isset($c['commissions']['fixed']) ? (float) $c['commissions']['fixed'] : 0.0,
+                    'minimal' => isset($c['commissions']['minimal']) ? (float) $c['commissions']['minimal'] : null,
+                ],
             ];
         }
 

@@ -82,7 +82,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.3';
+        $this->version = '1.2.4';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -340,7 +340,8 @@ final class Simpay extends PaymentModule
         $showSeparateMethods = (bool) Configuration::get(SimpayDataConfiguration::SHOW_SEPARATE_PAYMENT_METHODS);
         $showBlikInWidget = (bool) Configuration::get(SimpayDataConfiguration::SHOW_BLIK_IN_WIDGET);
         $commissionMode = (string) (Configuration::get(SimpayDataConfiguration::COMMISSION_MODE) ?: 'merchant');
-        $isPayerCommission = ($commissionMode === 'payer');
+        $isPayerCommission = ($commissionMode === 'payer' || $commissionMode === 'split');
+        $commissionSplit = ($commissionMode === 'split') ? (int) (Configuration::get(SimpayDataConfiguration::COMMISSION_SPLIT) ?: 50) : 100;
         $token = Tools::getToken('simpay');
         $cartTotalWithShipping = (float) $cart->getOrderTotal(true, Cart::BOTH);
 
@@ -412,15 +413,21 @@ final class Simpay extends PaymentModule
             $commissionMap = [];
             foreach ($allChannels as $ch) {
                 $chId = (string) ($ch['id'] ?? '');
-                $commission = isset($ch['commission']) ? (float) $ch['commission'] : 0.0;
-                if ($chId !== '' && $commission > 0) {
-                    $commissionMap[$chId] = $commission;
+                $commissions = $ch['commissions'] ?? [];
+                $percentage = isset($commissions['percentage']) ? (float) $commissions['percentage'] : 0.0;
+                if ($chId !== '' && $percentage > 0) {
+                    $commissionMap[$chId] = [
+                        'percentage' => $percentage,
+                        'fixed' => isset($commissions['fixed']) ? (float) $commissions['fixed'] : 0.0,
+                        'minimal' => isset($commissions['minimal']) ? (float) $commissions['minimal'] : null,
+                    ];
                 }
             }
 
             $this->context->smarty->assign([
                 'simpay_commission_map_json' => json_encode($commissionMap),
                 'simpay_cart_total' => $cartTotalWithShipping,
+                'simpay_commission_split' => $commissionSplit,
                 'simpay_commission_msg_generic' => $this->trans(
                     'A transaction fee will be added to the payment amount. The exact amount will be shown on the payment gateway.',
                     [],

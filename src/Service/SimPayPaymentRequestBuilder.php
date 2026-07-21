@@ -98,6 +98,11 @@ final class SimPayPaymentRequestBuilder
         $commissionMode = (string) (Configuration::get(SimpayDataConfiguration::COMMISSION_MODE) ?: 'merchant');
         if ($commissionMode === 'payer') {
             $payload['commissionMode'] = 'payer';
+        } elseif ($commissionMode === 'split') {
+            $payerShare = (int) (Configuration::get(SimpayDataConfiguration::COMMISSION_SPLIT) ?: 50);
+            $merchantShare = 100 - $payerShare;
+            $payload['commissionMode'] = 'split';
+            $payload['commissionSplit'] = (float) $merchantShare;
         }
 
         // Add billing/shipping if available

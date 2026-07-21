@@ -21,6 +21,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const IPN_CHECK_IP = 'SIMPAY_IPN_CHECK_IP';
     public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
     public const COMMISSION_MODE = 'SIMPAY_COMMISSION_MODE';
+    public const COMMISSION_SPLIT = 'SIMPAY_COMMISSION_SPLIT';
 
     private ConfigurationInterface $configuration;
 
@@ -40,7 +41,8 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     show_blik_in_widget: boolean,
      *     ipn_check_ip: boolean,
      *     repayment_enabled: boolean,
-     *     commission_mode: string
+     *     commission_mode: string,
+     *     commission_split: int
      *  }
      */
     public function getConfiguration(): array
@@ -58,6 +60,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'ipn_check_ip' => (bool)$this->configuration->get(self::IPN_CHECK_IP),
             'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
             'commission_mode' => (string)($this->configuration->get(self::COMMISSION_MODE) ?: 'merchant'),
+            'commission_split' => (int)($this->configuration->get(self::COMMISSION_SPLIT) ?: 50),
         ];
     }
 
@@ -73,7 +76,8 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     show_blik_in_widget: boolean,
      *     ipn_check_ip: boolean,
      *     repayment_enabled: boolean,
-     *     commission_mode: string
+     *     commission_mode: string,
+     *     commission_split: int
      * } $configuration
      * @return array<string>
      */
@@ -96,6 +100,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::IPN_CHECK_IP, $configuration['ipn_check_ip']);
         $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
         $this->configuration->set(self::COMMISSION_MODE, $configuration['commission_mode'] ?? 'merchant');
+        $this->configuration->set(self::COMMISSION_SPLIT, $configuration['commission_split'] ?? 50);
         return [];
     }
 

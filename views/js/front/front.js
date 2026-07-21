@@ -8,12 +8,14 @@ $(function () {
     const $notice = $('#simpay-commission-notice');
     let commissionMap = {};
     let cartTotal = 0;
+    let commissionSplit = 100;
     let msgGeneric = '';
     let msgFee = '';
 
     if ($notice.length) {
         try { commissionMap = JSON.parse($notice.attr('data-commission-map') || '{}'); } catch(e) {}
         cartTotal = parseFloat($notice.attr('data-cart-total') || '0');
+        commissionSplit = parseInt($notice.attr('data-commission-split') || '100', 10);
         msgGeneric = $notice.attr('data-msg-generic') || '';
         msgFee = $notice.attr('data-msg-fee') || '';
 
@@ -26,6 +28,28 @@ $(function () {
 
     function formatAmount(amount) {
         return amount.toFixed(2).replace('.', ',');
+    }
+
+    function calculateFee(channelData) {
+        var percentage = channelData.percentage || 0;
+        var fixed = channelData.fixed || 0;
+        var minimal = channelData.minimal || null;
+
+        // Calculate total commission
+        var fee = cartTotal * (percentage / 100);
+
+        if (fixed > 0) {
+            fee += fixed;
+        }
+
+        if (minimal !== null && fee < minimal) {
+            fee = minimal;
+        }
+
+        // Apply payer's share (commissionSplit = payer %)
+        fee = fee * commissionSplit / 100;
+
+        return Math.round(fee * 100) / 100;
     }
 
     function updateCommissionNotice() {
@@ -98,23 +122,23 @@ $(function () {
         // Show the notice
         var $text = $('#simpay-commission-text');
 
-        if (selectedMethod && commissionMap[selectedMethod] && commissionMap[selectedMethod] > 0) {
+        if (selectedMethod && commissionMap[selectedMethod] && commissionMap[selectedMethod].percentage > 0) {
             // Specific method selected → show exact fee
-            var percent = commissionMap[selectedMethod];
-            var amount = Math.round(cartTotal * percent) / 100;
-            $text.html(msgFee + ': <strong>' + formatAmount(amount) + ' PLN</strong> <small>(' + percent.toFixed(2).replace('.', ',') + '%)</small>');
-            $notice.show();
+            var channelData = commissionMap[selectedMethod];
+            var amount = calculateFee(channelData);
+            if (amount > 0) {
+                $text.html(msgFee + ': <strong>' + formatAmount(amount) + ' PLN</strong>');
+                $notice.show();
+            } else {
+                $notice.hide();
+            }
         } else if (isSimpayMain && !selectedMethod) {
             // Main gateway, no method selected → generic message
             $text.html(msgGeneric);
             $notice.show();
-        } else if (selectedMethod && (!commissionMap[selectedMethod] || commissionMap[selectedMethod] === 0)) {
-            // Method with 0% commission
-            $notice.hide();
         } else {
-            // Separate method without specific commission data → generic
-            $text.html(msgGeneric);
-            $notice.show();
+            // Method with 0% commission or not in map → hide
+            $notice.hide();
         }
     }
 

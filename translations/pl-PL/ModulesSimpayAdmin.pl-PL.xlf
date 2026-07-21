@@ -158,6 +158,41 @@
         <target>Ponowienie płatności</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="1db386bdee46bb5430b50841035b22e7">
+        <source>Commission paid by</source>
+        <target>Prowizja płacona przez</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6d9e18308502bb8ed240540bab3f773e">
+        <source>Choose who pays the transaction commission — the merchant, the payer, or split between both.</source>
+        <target>Wybierz, kto pokrywa prowizję transakcyjną — sklep, kupujący, lub podział między obie strony.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="896890bfb700eac98300d639ca970f2b">
+        <source>Merchant</source>
+        <target>Sprzedawca</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a447e52f554a310b7ad09a83ce9051ff">
+        <source>Payer</source>
+        <target>Kupujący</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8a9e64d86ed12ad40de129bc7f4683b2">
+        <source>Split</source>
+        <target>Podział</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0f0dfda7559e4339005e2ea8abfd7e38">
+        <source>Payer commission share (%)</source>
+        <target>Udział kupującego w prowizji (%)</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2ee378d353fac3701b9441439c714d57">
+        <source>Percentage of the commission covered by the payer. E.g. 50 = payer pays half, merchant pays the other half.</source>
+        <target>Procent prowizji pokrywany przez kupującego. Np. 50 = kupujący płaci połowę, sklep drugą połowę.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="5f7ae98bdc36ea2686daed151216abf6">
         <source>Retry payment</source>
         <target>Ponów płatność</target>
