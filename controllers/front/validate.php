@@ -78,7 +78,8 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
         /** @var SimPayPaymentRequestBuilder $builder */
         $builder = $this->module->getService(SimPayPaymentRequestBuilder::class);
         $builderOrderId = $this->retryOrder ? (int) $this->retryOrder->id : (int) $this->module->currentOrder;
-        $payload = $builder->build($cart, $customer->secure_key, $method ?: null, $builderOrderId);
+        $retryAmount = $this->retryOrder ? (float) $this->retryOrder->total_paid_tax_incl : null;
+        $payload = $builder->build($cart, $customer->secure_key, $method ?: null, $builderOrderId, $retryAmount);
 
         try {
             $json = $simpay->client()->createTransaction($payload);

@@ -37,12 +37,13 @@ final class SimPayPaymentRequestBuilder
      * @param string $customerSecureKey
      * @param string|null $channel SimPay channel id (optional)
      * @param int|null $orderId Existing order id (retry) or newly created order id (validate)
+     * @param float|null $overrideAmount Override amount (e.g. from order total on retry)
      *
      * @return array<string, mixed>
      */
-    public function build(Cart $cart, string $customerSecureKey, ?string $channel = null, ?int $orderId = null): array
+    public function build(Cart $cart, string $customerSecureKey, ?string $channel = null, ?int $orderId = null, ?float $overrideAmount = null): array
     {
-        $amount = (float) $cart->getOrderTotal();
+        $amount = $overrideAmount ?? (float) $cart->getOrderTotal();
 
         /** @var Link $link */
         $link = $this->context->link;
