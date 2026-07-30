@@ -140,6 +140,9 @@ final class SimpayValidateModuleFrontController extends ModuleFrontController
             return;
         }
 
+        // Store transaction ID in native PrestaShop order_payment (for BaseLinker, ERP, etc.)
+        $attemptService->syncOrderPaymentTransactionId($order, $transactionId);
+
         SimPayLogger::setDefaultOrderId((int) $order->id);
         SimPayLogger::info($this->trans('Order payment started', [], 'Modules.Simpay.Logs'), [
             'transaction_id' => $transactionId,

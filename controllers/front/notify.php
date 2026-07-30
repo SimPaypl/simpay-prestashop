@@ -235,6 +235,11 @@ final class SimpayNotifyModuleFrontController extends ModuleFrontController
 
             $this->attemptService->updateStatus($transactionId, $status, PaymentStatus::isFinal($status), $finalChannel);
 
+            // Update native PrestaShop order_payment with transaction ID (for BaseLinker, etc.)
+            if (PaymentStatus::isPaid($status)) {
+                $this->attemptService->syncOrderPaymentTransactionId($order, $transactionId);
+            }
+
             SimPayLogger::info(
                 $this->trans('Order status updated successfully', [], 'Modules.Simpay.Logs'),
                 ['order' => (int) $order->id, 'new_state' => $newState]

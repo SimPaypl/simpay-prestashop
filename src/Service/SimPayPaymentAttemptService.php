@@ -6,6 +6,7 @@ namespace SimPaypl\PrestaShop\Service;
 
 use Db;
 use Order;
+use OrderPayment;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
 
 final class SimPayPaymentAttemptService
@@ -86,5 +87,31 @@ final class SimPayPaymentAttemptService
             ],
             'id_order = ' . $orderId
         );
+    }
+
+    /**
+     * Update native PrestaShop order_payment with SimPay transaction ID.
+     * Makes the transaction visible to external integrations (BaseLinker, ERP, etc.)
+     */
+    public function syncOrderPaymentTransactionId(Order $order, string $transactionId): void
+    {
+        if ($transactionId === '') {
+            return;
+        }
+
+        try {
+            $payments = $order->getOrderPaymentCollection();
+            if ($payments && $payments->count() > 0) {
+                /** @var OrderPayment $payment */
+                $payment = $payments->getLast();
+                $payment->transaction_id = $transactionId;
+                $payment->save();
+            }
+        } catch (\Throwable $e) {
+            SimPayLogger::warning('Failed to update order_payment transaction_id', [
+                'order' => (int) $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

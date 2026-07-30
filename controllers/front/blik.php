@@ -121,6 +121,9 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
 
         $attemptService->registerAttempt($order, $transactionId, 'blik-level0', 'checkout');
 
+        // Store transaction ID in native PrestaShop order_payment
+        $attemptService->syncOrderPaymentTransactionId($order, $transactionId);
+
         // OneClick alias is REQUIRED by SimPay API for every BLIK Level 0 call when OneClick is enabled on service.
         // When paying WITH a code, alias must always be in "register" format (value + type), never uuid.
         // The uuid format is only valid for OneClick (without code) via sendBlikOneClick.
@@ -384,6 +387,9 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
 
         $attemptService = $this->module->getService(SimPayPaymentAttemptService::class);
         $attemptService->registerAttempt($order, $transactionId, 'blik-oneclick', 'checkout');
+
+        // Store transaction ID in native PrestaShop order_payment
+        $attemptService->syncOrderPaymentTransactionId($order, $transactionId);
 
         // Send OneClick request (no code, using alias uuid)
         $aliasPayload = $aliasService->buildOneClickAliasPayload($activeAlias);
