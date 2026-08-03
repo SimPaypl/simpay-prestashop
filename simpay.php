@@ -82,7 +82,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.6';
+        $this->version = '1.2.7';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -257,6 +257,12 @@ final class Simpay extends PaymentModule
             $c->addCSS($this->_path . 'views/css/front/simpay.css');
             $c->addJS($this->_path . 'views/js/front/front.js');
             $c->addJS($this->_path . 'views/js/front/blikWidget.js');
+
+            // Commission notice on order-detail page
+            if ($phpSelf === 'order-detail') {
+                $this->addOrderCommissionNotice();
+            }
+
             return;
         }
 
@@ -776,9 +782,52 @@ final class Simpay extends PaymentModule
 
     public function hookDisplayOrderDetail(array $params): string
     {
+        $output = '';
+
+        // Retry payment
         /** @var SimPayRetryPaymentService $retryService */
         $retryService = $this->getService(SimPayRetryPaymentService::class);
-        return $retryService->hookDisplayOrderDetail($params, __FILE__);
+        $output .= $retryService->hookDisplayOrderDetail($params, __FILE__);
+
+        return $output;
+    }
+
+    private function addOrderCommissionNotice(): void
+    {
+        $orderId = (int) Tools::getValue('id_order');
+        if ($orderId <= 0) {
+            return;
+        }
+
+        $order = new Order($orderId);
+        if (!Validate::isLoadedObject($order) || $order->module !== $this->name) {
+            return;
+        }
+
+        /** @var SimPayPaymentAttemptService $attemptService */
+        $attemptService = $this->getService(SimPayPaymentAttemptService::class);
+        $attempts = $attemptService->findByOrderId($orderId);
+
+        $commissionMode = null;
+        foreach ($attempts as $attempt) {
+            $mode = (string) ($attempt['commission_mode'] ?? '');
+            if ($mode !== '' && $mode !== 'merchant') {
+                $commissionMode = $mode;
+                break;
+            }
+        }
+
+        if (!$commissionMode) {
+            return;
+        }
+
+        if ($commissionMode === 'payer' || $commissionMode === 'split') {
+            $message = $this->trans('A transaction fee was charged during payment. This fee was visible at checkout and on the payment gateway.', [], 'Modules.Simpay.Shop');
+        } else {
+            return;
+        }
+
+        $this->context->controller->info[] = $message;
     }
 
     public function hookActionGetExtraMailTemplateVars(array &$params): void
@@ -912,6 +961,7 @@ final class Simpay extends PaymentModule
             `payment_type` VARCHAR(32) DEFAULT NULL,
             `status` VARCHAR(32) DEFAULT NULL,
             `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+            `commission_mode` VARCHAR(16) DEFAULT NULL,
             `created_at` DATETIME NOT NULL,
             `updated_at` DATETIME NOT NULL,
             PRIMARY KEY (`id_simpay_payment_attempt`),

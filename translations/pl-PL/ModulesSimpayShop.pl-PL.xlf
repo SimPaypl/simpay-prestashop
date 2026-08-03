@@ -449,6 +449,11 @@ Kliknij poniższy przycisk, aby kontynuować i sfinalizować płatność.</targe
         <target>Przejdź do szczegółów zamówienia</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="simpay_commission_notice_order">
+        <source>A transaction fee was charged during payment. This fee was visible at checkout and on the payment gateway.</source>
+        <target>Podczas płatności została pobrana opłata transakcyjna. Opłata była widoczna przy składaniu zamówienia oraz na bramce płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

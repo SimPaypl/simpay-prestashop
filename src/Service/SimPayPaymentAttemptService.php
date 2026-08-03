@@ -7,6 +7,8 @@ namespace SimPaypl\PrestaShop\Service;
 use Db;
 use Order;
 use OrderPayment;
+use Configuration;
+use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayLogger;
 
 final class SimPayPaymentAttemptService
@@ -26,6 +28,7 @@ final class SimPayPaymentAttemptService
             'payment_type' => pSQL($flowType),
             'status' => 'transaction_new',
             'is_active' => 1,
+            'commission_mode' => pSQL((string) (Configuration::get(SimpayDataConfiguration::COMMISSION_MODE) ?: 'merchant')),
             'created_at' => $now,
             'updated_at' => $now,
         ]);
