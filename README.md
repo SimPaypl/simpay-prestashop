@@ -14,6 +14,7 @@ Integracja jest w pełni osadzona w ścieżce zakupowej, a dodatkowo zapewnia po
     - [Instalacja przez FTP](#instalacja-przez-ftp)
 - [Aktualizacja](#aktualizacja)
 - [Konfiguracja](#konfiguracja)
+    - [Połączenie z SimPay (OAuth)](#połączenie-z-simpay-oauth)
     - [Dane uwierzytelniające](#dane-uwierzytelniające)
     - [Adresy komunikacji (webhook / notify)](#adresy-komunikacji-webhook--notify)
     - [Metody płatności i ich kolejność](#metody-płatności-i-ich-kolejność)
@@ -34,6 +35,7 @@ Integracja jest w pełni osadzona w ścieżce zakupowej, a dodatkowo zapewnia po
 
 Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 
+- **połączenie ze SimPay jednym kliknięciem (OAuth)** – bez ręcznego kopiowania kluczy; dane można też wprowadzić ręcznie,
 - płatności osadzone w ścieżce zamówienia (checkout),
 - prezentację dostępnych metod płatności w sklepie,
 - możliwość **włączania i wyłączania metod płatności** oraz ustawiania ich kolejności,
@@ -46,7 +48,7 @@ Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 - mechanizm sprawdzania dostępności aktualizacji modułu (powiadomienie w Back Office + link do pobrania),
 - **płatność BLIK 0** – klient pozostaje na stronie koszyka sklepu i wpisuje 6-cyfrowy kod BLIK wygenerowany w aplikacji mobilnej banku.
 - obsługę multisklepu (multi-store) – konfiguracja modułu jest niezależna dla każdego sklepu, a ustawienia metod płatności są zapisywane osobno.
-- możliwość wykonywania **zwrotów pełnych i częściowych** bezpośrednio z poziomu szczegółów zamówienia w Back Office.
+- **zwroty na podstawie zwracanych produktów** (ilości + koszt dostawy) bezpośrednio z poziomu szczegółów zamówienia w Back Office – kwota liczy się automatycznie.
 - wybór **trybu prowizji** – sklep, kupujący lub podział (split) pokrywa opłatę transakcyjną, z dynamicznym wyświetlaniem kwoty prowizji w checkout.
 
 ---
@@ -105,9 +107,21 @@ Moduł dodaje do PrestaShop obsługę płatności SimPay oraz umożliwia m.in.:
 
 ## Konfiguracja
 
+### Połączenie z SimPay (OAuth)
+
+W konfiguracji modułu, w zakładce **Połącz przez SimPay (zalecane)**:
+
+1. kliknij **Połącz z SimPay** i zaloguj się do panelu SimPay,
+2. zaakceptuj dostęp i wybierz usługę płatności dla sklepu.
+
+Moduł automatycznie utworzy klucz API, ustawi adres IPN i wygeneruje klucz sygnatury IPN – dane trafią do tych samych pól co przy konfiguracji ręcznej. Przycisk **Rozłącz** usuwa dane ze sklepu (klucz API pozostaje w panelu SimPay).
+
+> Wymagany jest panel sklepu działający po HTTPS.  
+> Połączenie generuje **nowy klucz sygnatury IPN** dla wybranej usługi – poprzedni przestaje działać. Jeśli ta sama usługa jest używana przez inny sklep lub integrację, zaktualizuj tam klucz.
+
 ### Dane uwierzytelniające
 
-W konfiguracji modułu uzupełnij dane otrzymane z panelu SimPay:
+Alternatywnie, w zakładce **Wprowadź dane ręcznie** uzupełnij dane otrzymane z panelu SimPay:
 
 - **Hasło API (Bearer Token)**
 - **ID usługi**
@@ -115,7 +129,7 @@ W konfiguracji modułu uzupełnij dane otrzymane z panelu SimPay:
 
 ### Adresy komunikacji (webhook / notify)
 
-W panelu SimPay dodaj adres do komunikacji IPN:
+Przy połączeniu przez OAuth adres ustawiany jest automatycznie. Przy konfiguracji ręcznej dodaj w panelu SimPay adres do komunikacji IPN:
 
 - `https://twoja-domena.pl/module/simpay/notify`
 
@@ -233,10 +247,13 @@ Dzięki temu możliwe jest szybkie sprawdzenie:
 
 Zakładka **Zwroty** wyświetla listę aktualnych zwrotów i umożliwia realizację zwrotów bezpośrednio z poziomu szczegółów zamówienia w Back Office.
 
-Zwrot można utworzyć:
+Zwrot tworzy się na podstawie tego, co klient zwraca:
 
-- jako **zwrot pełny** (całość opłaconej kwoty),
-- jako **zwrot częściowy** (dowolna kwota nieprzekraczająca dostępnego salda do zwrotu).
+- wybierz **ilość sztuk** poszczególnych produktów i ewentualnie **koszt dostawy** (lub **Zaznacz wszystko**),
+- kwota zwrotu liczy się automatycznie – z uwzględnieniem rabatów zamówienia – i jest ponownie wyliczana po stronie serwera,
+- przed wysłaniem moduł prosi o potwierdzenie kwoty.
+
+Moduł pamięta, które produkty zostały już zwrócone, więc nie da się zwrócić tej samej pozycji dwa razy. Podwójne kliknięcie ani odświeżenie strony nie utworzą drugiego zwrotu.
 
 Po utworzeniu zwrotu:
 
@@ -247,7 +264,7 @@ Po utworzeniu zwrotu:
 Zwrot może zostać wykonany wyłącznie wtedy, gdy:
 
 - istnieje **opłacona transakcja** powiązana z zamówieniem,
-- suma wszystkich dotychczasowych zwrotów **nie przekracza wartości zamówienia**,
+- suma dotychczasowych zwrotów (także tych w trakcie realizacji) **nie przekracza wartości zamówienia**,
 - transakcja znajduje się w stanie umożliwiającym wykonanie zwrotu po stronie SimPay.
 
 Jeśli którykolwiek z warunków nie jest spełniony, moduł uniemożliwi utworzenie zwrotu.

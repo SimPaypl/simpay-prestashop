@@ -25,6 +25,10 @@
       <input type="hidden" name="simpay_method_choice" value="blik">
 
       <div class="simpay-blik-widget">
+        <div class="simpay-blik-widget__header">
+          <span class="simpay-blik-widget__title">{l s='Pay with BLIK' d='Modules.Simpay.Shop'}</span>
+          <img class="simpay-blik-widget__logo" src="{$simpay_blik_widget_assets|escape:'htmlall':'UTF-8'}views/img/option/simpay.svg" alt="SimPay" width="70" height="18">
+        </div>
 
         {* OneClick section - shown when customer has active alias *}
         <div class="simpay-blik-oneclick" data-simpay-oneclick-section style="display:none;">
@@ -40,22 +44,24 @@
           <div class="simpay-blik-widget__field">
             <input
               type="text"
+              id="simpay_blik_code_{$simpay_blik_widget_cart_id|escape:'htmlall':'UTF-8'}"
               name="blik_code"
               inputmode="numeric"
+              autocomplete="one-time-code"
               maxlength="7"
               minlength="6"
+              placeholder="000 000"
               class="simpay-blik-widget__input"
               data-simpay-blik-code
-              aria-label="{l s='BLIK code' d='Modules.Simpay.Shop'}"
             >
-            <label class="simpay-blik-widget__label" for="blik_code">Kod BLIK</label>
+            <label class="simpay-blik-widget__label" for="simpay_blik_code_{$simpay_blik_widget_cart_id|escape:'htmlall':'UTF-8'}">{l s='BLIK code' d='Modules.Simpay.Shop'}</label>
           </div>
           {if isset($simpay_blik_oneclick_enabled) && $simpay_blik_oneclick_enabled}
             <a href="#" class="simpay-blik-oneclick__switch" data-simpay-switch-to-oneclick style="display:none;">{l s='Pay without entering a code' d='Modules.Simpay.Shop'}</a>
           {/if}
         </div>
 
-        <div class="simpay-blik-widget__hint">
+        <div class="simpay-blik-widget__hint" data-simpay-blik-hint data-state="info" role="status" aria-live="polite">
           <span class="simpay-blik-widget__loader" aria-hidden="true" data-simpay-blik-loader></span>
           <span data-simpay-blik-message>{l s='You can find the BLIK code in your banking app.' d='Modules.Simpay.Shop'}</span>
         </div>
@@ -63,10 +69,6 @@
         <div class="simpay-blik-widget__actions">
           <div data-simpay-terms-slot></div>
           <div data-simpay-main-button-slot></div>
-        </div>
-
-        <div class="simpay-blik-widget__logo">
-          <img src="{$simpay_blik_widget_assets}views/img/option/simpay.svg"/>
         </div>
       </div>
     </form>

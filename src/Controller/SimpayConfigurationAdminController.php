@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use SimPaypl\PrestaShop\Form\SimpayDataConfiguration;
 use SimPaypl\PrestaShop\Helper\SimPayChannelCache;
+use SimPay\SDK\OAuth\OAuthClient;
+use SimPay\SDK\OAuth\PaymentService;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class SimpayConfigurationAdminController extends FrameworkBundleAdminController
 {
@@ -49,7 +52,35 @@ final class SimpayConfigurationAdminController extends FrameworkBundleAdminContr
             'availableMethodsMain' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::PAYMENT_METHODS_LIST_IN_MAIN),
             'selectedMethodsSeparate' => $this->getActiveSelectedChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, false, true),
             'availableMethodsSeparate' => $this->getActiveAvailableChannelsByConfig(SimpayDataConfiguration::SEPARATE_PAYMENT_METHODS_LIST, false, true),
+            'oauth' => $this->getOAuthViewData($request),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getOAuthViewData(Request $request): array
+    {
+        $pending = SimpayOAuthAdminController::createConnector($request)->getPendingConnection();
+
+        $redirectUri = SimpayOAuthAdminController::buildRedirectUri(
+            $this->generateUrl('simpay_oauth_callback', [], UrlGeneratorInterface::ABSOLUTE_PATH)
+        );
+
+        return [
+            'https_ok' => OAuthClient::isRedirectUriAllowed($redirectUri),
+            'redirect_uri' => (string) strtok($redirectUri, '?'),
+            'connected' => Configuration::get(SimpayDataConfiguration::AUTH_METHOD) === SimpayDataConfiguration::AUTH_METHOD_OAUTH
+                && (string) Configuration::get(SimpayDataConfiguration::API_PASSWORD) !== '',
+            'account_email' => (string) Configuration::get(SimpayDataConfiguration::OAUTH_ACCOUNT_EMAIL),
+            'service_name' => (string) Configuration::get(SimpayDataConfiguration::OAUTH_SERVICE_NAME),
+            'service_id' => (string) Configuration::get(SimpayDataConfiguration::SERVICE_ID),
+            'pending' => $pending === null ? null : [
+                'email' => $pending->accountEmail,
+                'services' => array_map(static fn (PaymentService $s): array => $s->toArray(), $pending->services),
+                'suggested_service_id' => $pending->suggestServiceId(SimpayOAuthAdminController::getShopUrl()),
+            ],
+        ];
     }
 
     public function channelsAction(Request $request): JsonResponse

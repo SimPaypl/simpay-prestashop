@@ -191,6 +191,9 @@ $(function () {
 
         $input.closest('.simpay-payment-channels__item')
             .addClass('simpay-payment-channels__item--active');
+
+        // fades out the other tiles, so the choice is obvious without any label
+        $grid.addClass('simpay-payment-channels--has-choice');
     }
 
     function toggleSubmit(canSubmit) {
@@ -212,8 +215,16 @@ $(function () {
         const id = getSelectedPaymentOptionId();
         if (!id) return;
         const $form = $('#pay-with-' + id + '-form');
-        const $err = $form.find('.simpay-error');
-        if ($err.length) $err.toggle(!!show);
+        // No text message: the tiles pulse once when a choice is missing
+        const $grid = $form.find('.simpay-payment-channels');
+        if (!show) {
+            $grid.removeClass('simpay-payment-channels--attention');
+            return;
+        }
+        // restart the CSS animation on every new attempt
+        $grid.removeClass('simpay-payment-channels--attention');
+        if ($grid.length) void $grid[0].offsetWidth;
+        $grid.addClass('simpay-payment-channels--attention');
     }
 
     function validateSimpayBeforeSubmit() {
@@ -233,7 +244,11 @@ $(function () {
 
         const ok = termsOk && choiceOk;
 
-        showError(choiceRequired && !choiceOk);
+        // Highlight a missing choice only once the customer is ready to order (terms accepted);
+        // shops without a terms checkbox highlight it immediately.
+        const readyToOrder = getTermsCheckbox().length ? termsOk : true;
+
+        showError(choiceRequired && !choiceOk && readyToOrder);
         toggleSubmit(ok);
     }
 
