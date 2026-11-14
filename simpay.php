@@ -82,7 +82,7 @@ final class Simpay extends PaymentModule
     {
         $this->name = 'simpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.7';
+        $this->version = '1.3.0';
         $this->author = 'Payments Solution Sp. z o.o.';
         $this->ps_versions_compliancy = [
             'min' => '8.0.0',
@@ -288,6 +288,7 @@ final class Simpay extends PaymentModule
             ]);
 
             $this->context->controller->addJS($this->_path . 'views/js/admin/payment-methods.js');
+            $this->context->controller->addJS($this->_path . 'views/js/admin/auth-method.js');
             $this->context->controller->addCSS($this->_path . 'views/css/admin/admin.css');
         }
 
@@ -874,6 +875,9 @@ final class Simpay extends PaymentModule
                 $refundNoticeMessage = match ($code) {
                     'invalid_type' => $this->trans('Invalid refund type.', [], 'Modules.Simpay.Admin'),
                     'invalid_amount' => $this->trans('Invalid refund amount.', [], 'Modules.Simpay.Admin'),
+                    'nothing_selected' => $this->trans('Select at least one product or the shipping cost to refund.', [], 'Modules.Simpay.Admin'),
+                    'invalid_quantity' => $this->trans('The selected quantity exceeds what can still be refunded. Reload the page and try again.', [], 'Modules.Simpay.Admin'),
+                    'expired_form' => $this->trans('This refund form was already submitted or has expired. Check the refund list before trying again.', [], 'Modules.Simpay.Admin'),
                     'missing_transaction' => $this->trans('No transaction found for refund.', [], 'Modules.Simpay.Admin'),
                     'api_error' => $this->trans('Refund request failed: :msg', [':msg' => $msg], 'Modules.Simpay.Admin'),
                     default => $this->trans('Refund request failed.', [], 'Modules.Simpay.Admin'),
@@ -883,10 +887,23 @@ final class Simpay extends PaymentModule
         }
 
         if (Tools::isSubmit('simpay_refund_submit')) {
-            $type = (string) Tools::getValue('simpay_refund_type');
-            $amount = (float) str_replace(',', '.', (string) Tools::getValue('simpay_refund_amount'));
+            // One-time form token: a double click, page refresh or "back" must never create a second refund
+            $nonceKey = 'simpay_refund_nonce_' . (int) $order->id;
+            $postedNonce = (string) Tools::getValue('simpay_refund_nonce');
+            $expectedNonce = (string) ($this->context->cookie->{$nonceKey} ?? '');
+            unset($this->context->cookie->{$nonceKey});
+            $this->context->cookie->write();
 
-            $result = $refundService->requestRefund($order, $type, $amount);
+            if ($expectedNonce === '' || !hash_equals($expectedNonce, $postedNonce)) {
+                $result = ['success' => false, 'code' => 'expired_form'];
+            } else {
+                $quantities = Tools::getValue('simpay_refund_qty');
+                $result = $refundService->requestItemsRefund(
+                    $order,
+                    is_array($quantities) ? $quantities : [],
+                    (bool) Tools::getValue('simpay_refund_shipping')
+                );
+            }
 
             Tools::redirectAdmin(
                 $this->context->link->getAdminLink('AdminOrders', true, [], [
@@ -899,6 +916,43 @@ final class Simpay extends PaymentModule
                 ])
             );
         }
+
+        try {
+            $refundable = $refundService->getRefundableData($order);
+        } catch (\Throwable $e) {
+            // never hide payments/logs because of the refund form - just disable refunding
+            SimPayLogger::error('Refund data could not be loaded', ['order' => (int) $order->id, 'msg' => $e->getMessage()]);
+            $refundable = [
+                'items' => [],
+                'shipping' => ['amount' => 0.0, 'refunded' => false, 'available' => false],
+                'paid' => (float) $order->total_paid,
+                'refunded' => 0.0,
+                'remaining' => 0.0,
+                'discount_percent' => 0.0,
+            ];
+            $isRefundPossible = false;
+        }
+
+        $itemNames = ['shipping' => $this->trans('Shipping', [], 'Modules.Simpay.Admin')];
+        foreach ($refundable['items'] as $item) {
+            $itemNames[(string) $item['id_order_detail']] = $item['name'];
+        }
+
+        // "Mug × 1, Shipping" for the refund list (older refunds have no items stored)
+        foreach ($refunds as &$refund) {
+            $labels = [];
+            $refundItems = json_decode((string) ($refund['items'] ?? ''), true);
+            foreach (is_array($refundItems) ? $refundItems : [] as $key => $qty) {
+                $name = $itemNames[(string) $key] ?? ('#' . $key);
+                $labels[] = $key === 'shipping' ? $name : $name . ' × ' . (int) $qty;
+            }
+            $refund['items_label'] = implode(', ', $labels);
+        }
+        unset($refund);
+
+        $refundNonce = bin2hex(random_bytes(16));
+        $this->context->cookie->{'simpay_refund_nonce_' . (int) $order->id} = $refundNonce;
+        $this->context->cookie->write();
 
         $this->context->smarty->assign([
             'simpay_attempts' => $attempts,
@@ -913,8 +967,12 @@ final class Simpay extends PaymentModule
             'simpay_refund_notice_type' => $refundNoticeType,
             'simpay_refund_notice_message' => $refundNoticeMessage,
             'simpay_currency_sign' => $currency->sign,
-            'simpay_refund_max_amount' => (float) $order->total_paid,
-            'simpay_is_refund_possible' => $isRefundPossible
+            'simpay_is_refund_possible' => $isRefundPossible,
+            'simpay_refundable' => $refundable,
+            'simpay_refund_nonce' => $refundNonce,
+            'simpay_refund_item_names' => $itemNames,
+            'simpay_currency_iso' => $currency->iso_code,
+            'simpay_locale' => (string) ($this->context->language->locale ?? $this->context->language->language_code ?? 'pl-PL'),
         ]);
 
         return $this->fetch('module:' . $this->name . '/views/templates/admin/order/order_main.tpl');
@@ -980,6 +1038,7 @@ final class Simpay extends PaymentModule
         `transaction_id` VARCHAR(64) NOT NULL,
         `refund_type` VARCHAR(32) DEFAULT NULL,
         `amount` INT DEFAULT NULL,
+        `items` TEXT DEFAULT NULL,
         `status` VARCHAR(32) DEFAULT NULL,
         `created_at` DATETIME NOT NULL,
         `updated_at` DATETIME NOT NULL,

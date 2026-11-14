@@ -22,6 +22,12 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
     public const REPAYMENT_ENABLED = 'SIMPAY_REPAYMENT_ENABLED';
     public const COMMISSION_MODE = 'SIMPAY_COMMISSION_MODE';
     public const COMMISSION_SPLIT = 'SIMPAY_COMMISSION_SPLIT';
+    public const AUTH_METHOD = 'SIMPAY_AUTH_METHOD';
+    public const OAUTH_ACCOUNT_EMAIL = 'SIMPAY_OAUTH_ACCOUNT_EMAIL';
+    public const OAUTH_SERVICE_NAME = 'SIMPAY_OAUTH_SERVICE_NAME';
+
+    public const AUTH_METHOD_OAUTH = 'oauth';
+    public const AUTH_METHOD_MANUAL = 'manual';
 
     private ConfigurationInterface $configuration;
 
@@ -42,7 +48,8 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
      *     ipn_check_ip: boolean,
      *     repayment_enabled: boolean,
      *     commission_mode: string,
-     *     commission_split: int
+     *     commission_split: int,
+     *     auth_method: string
      *  }
      */
     public function getConfiguration(): array
@@ -61,6 +68,7 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
             'repayment_enabled' => (bool)$this->configuration->get(self::REPAYMENT_ENABLED),
             'commission_mode' => (string)($this->configuration->get(self::COMMISSION_MODE) ?: 'merchant'),
             'commission_split' => (int)($this->configuration->get(self::COMMISSION_SPLIT) ?: 50),
+            'auth_method' => $this->getAuthMethod(),
         ];
     }
 
@@ -101,7 +109,25 @@ final class SimpayDataConfiguration implements DataConfigurationInterface
         $this->configuration->set(self::REPAYMENT_ENABLED, $configuration['repayment_enabled']);
         $this->configuration->set(self::COMMISSION_MODE, $configuration['commission_mode'] ?? 'merchant');
         $this->configuration->set(self::COMMISSION_SPLIT, $configuration['commission_split'] ?? 50);
+        $this->configuration->set(
+            self::AUTH_METHOD,
+            ($configuration['auth_method'] ?? '') === self::AUTH_METHOD_OAUTH ? self::AUTH_METHOD_OAUTH : self::AUTH_METHOD_MANUAL
+        );
         return [];
+    }
+
+    /**
+     * Stored auth method; for shops without credentials yet, OAuth is the suggested default.
+     * Existing installations (credentials entered before OAuth existed) default to manual.
+     */
+    public function getAuthMethod(): string
+    {
+        $method = (string) $this->configuration->get(self::AUTH_METHOD);
+        if (in_array($method, [self::AUTH_METHOD_OAUTH, self::AUTH_METHOD_MANUAL], true)) {
+            return $method;
+        }
+
+        return (string) $this->configuration->get(self::API_PASSWORD) === '' ? self::AUTH_METHOD_OAUTH : self::AUTH_METHOD_MANUAL;
     }
 
     /**

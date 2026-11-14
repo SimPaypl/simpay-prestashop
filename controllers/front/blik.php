@@ -212,13 +212,13 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
                 'has_alias' => $blikAlias !== null,
             ]);
 
-            if ($errorCode !== '') {
-                $message = $this->translateBlikErrorCode($errorCode, $message);
-            }
+            $fallback = $e->getHttpStatusCode() === 400
+                ? $this->trans('Invalid BLIK code.', [], 'Modules.Simpay.Shop')
+                : $this->trans('BLIK payment failed. Try again.', [], 'Modules.Simpay.Shop');
 
             return [
                 'success' => false,
-                'message' => $message,
+                'message' => $this->translateBlikErrorCode($errorCode, $fallback),
                 'error_code' => $errorCode,
                 'http_status' => $e->getHttpStatusCode(),
             ];
@@ -422,7 +422,7 @@ final class SimpayBlikModuleFrontController extends ModuleFrontController
             ]);
 
             $this->respondError(
-                $this->translateBlikErrorCode($errorCode, $e->getMessage()),
+                $this->translateBlikErrorCode($errorCode, $this->trans('BLIK OneClick request failed.', [], 'Modules.Simpay.Shop')),
                 $errorCode
             );
         } catch (\Throwable $e) {

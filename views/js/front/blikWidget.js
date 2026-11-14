@@ -12,11 +12,15 @@
     return form.getAttribute(key) || fallback;
   }
 
-  function setMessage(form, message) {
+  // state: 'info' (default), 'error' or 'success' - only changes the colour of the hint
+  function setMessage(form, message, state) {
     var el = form.querySelector('[data-simpay-blik-message]');
     if (!el) return;
     el.textContent = message || '';
     el.classList.toggle('d-none', !message);
+
+    var hint = form.querySelector('[data-simpay-blik-hint]');
+    if (hint) hint.setAttribute('data-state', message ? (state || 'info') : 'info');
   }
 
   function setLoading(form, isLoading) {
@@ -100,7 +104,7 @@
 
   function submitOneClick(form) {
     if (!areTermsAccepted()) {
-      setMessage(form, getMsg(form, 'data-simpay-msg-terms', 'Please accept the terms before continuing.'));
+      setMessage(form, getMsg(form, 'data-simpay-msg-terms', 'Please accept the terms before continuing.'), 'error');
       return;
     }
 
@@ -122,7 +126,7 @@
       .then(function (json) {
         if (!json) {
           setLoading(form, false);
-          setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'));
+          setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'), 'error');
           return;
         }
 
@@ -137,11 +141,11 @@
 
         // Other error
         setLoading(form, false);
-        setMessage(form, json.message || getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'));
+        setMessage(form, json.message || getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'), 'error');
       })
       .catch(function () {
         setLoading(form, false);
-        setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'));
+        setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'), 'error');
       });
   }
 
@@ -173,7 +177,7 @@
           }
 
           if (json.data.status === 'paid') {
-            setMessage(form, getMsg(form, 'data-simpay-msg-success', 'Payment confirmed. Redirecting to order confirmation…'));
+            setMessage(form, getMsg(form, 'data-simpay-msg-success', 'Payment confirmed. Redirecting to order confirmation…'), 'success');
             if (json.data.order_confirm_url) {
               window.location.href = json.data.order_confirm_url;
             }
@@ -183,7 +187,7 @@
 
           if (json.data.status === 'rejected') {
             setLoading(form, false);
-            setMessage(form, getMsg(form, 'data-simpay-msg-rejected', 'Payment rejected. Please enter a new BLIK code.'));
+            setMessage(form, getMsg(form, 'data-simpay-msg-rejected', 'Payment rejected. Please enter a new BLIK code.'), 'error');
             showSection(form, 'code');
             clearInterval(timer);
             return;
@@ -191,7 +195,7 @@
 
           if (json.data.status === 'expired') {
             setLoading(form, false);
-            setMessage(form, getMsg(form, 'data-simpay-msg-expired', 'BLIK code expired. Please enter a new code.'));
+            setMessage(form, getMsg(form, 'data-simpay-msg-expired', 'BLIK code expired. Please enter a new code.'), 'error');
             showSection(form, 'code');
             clearInterval(timer);
             return;
@@ -200,7 +204,7 @@
 
       if (Date.now() - started > timeout) {
         setLoading(form, false);
-        setMessage(form, getMsg(form, 'data-simpay-msg-expired', 'BLIK code expired. Please enter a new code.'));
+        setMessage(form, getMsg(form, 'data-simpay-msg-expired', 'BLIK code expired. Please enter a new code.'), 'error');
         showSection(form, 'code');
         clearInterval(timer);
       }
@@ -228,18 +232,18 @@
     if (!codeInput) return;
 
     if (!areTermsAccepted()) {
-      setMessage(form, getMsg(form, 'data-simpay-msg-terms', 'Please accept the terms before continuing.'));
+      setMessage(form, getMsg(form, 'data-simpay-msg-terms', 'Please accept the terms before continuing.'), 'error');
       return;
     }
 
     var clean = getCleanCode(codeInput.value);
     if (!clean) {
-      setMessage(form, getMsg(form, 'data-simpay-msg-empty', 'Enter the BLIK code'));
+      setMessage(form, getMsg(form, 'data-simpay-msg-empty', 'Enter the BLIK code'), 'error');
       codeInput.focus();
       return;
     }
     if (!/^\d{6}$/.test(clean)) {
-      setMessage(form, getMsg(form, 'data-simpay-msg-invalid', 'Invalid BLIK code'));
+      setMessage(form, getMsg(form, 'data-simpay-msg-invalid', 'Invalid BLIK code'), 'error');
       codeInput.focus();
       return;
     }
@@ -272,10 +276,10 @@
             return;
           }
         }
-        setMessage(form, (json && json.message) ? json.message : getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'));
+        setMessage(form, (json && json.message) ? json.message : getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'), 'error');
       })
       .catch(function () {
-        setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'));
+        setMessage(form, getMsg(form, 'data-simpay-msg-failed', 'BLIK payment failed. Try again.'), 'error');
       })
       .finally(function () {
         if (!keepLoading) {

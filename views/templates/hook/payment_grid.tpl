@@ -9,7 +9,10 @@
         <input type="hidden" name="simpay" value="1">
 
         {if $simpay_show_methods && !empty($simpay_methods) }
-        <ul class="simpay-payment-channels" data-simpay-grid="1">
+        {* No visible label: after a choice the other tiles fade out; the aria-label is for screen readers *}
+        <ul class="simpay-payment-channels" data-simpay-grid="1"
+            role="radiogroup"
+            aria-label="{l s='Select your bank or payment method' d='Modules.Simpay.Shop'}">
 
             {foreach from=$simpay_methods item=m name=mm}
                 {assign var=methodId value=$m.id|escape:'htmlall':'UTF-8'}
@@ -18,11 +21,11 @@
                 <label for="simpay_{$methodId}" class="simpay-payment-channels__item">
                     <input
                             id="simpay_{$methodId}"
+                            class="simpay-payment-channels__input"
                             type="radio"
                             name="simpay_method_choice"
                             value="{$methodId}"
                             required="required"
-                            style="display:none"
                     >
 
                     <div class="simpay-payment-channels__item-inner">
@@ -40,7 +43,4 @@
         </ul>
         {/if}
     </form>
-    <div class="simpay-error" style="display:none">
-        <span class="simpay-error__text">{l s='Please select a payment method' d='Modules.Simpay.Shop'}</span>
-    </div>
 </div>

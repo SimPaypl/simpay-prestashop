@@ -12,3 +12,42 @@ simpay_admin_channels:
   methods: [GET]
   defaults:
     _controller: 'SimPaypl\PrestaShop\Controller\SimpayConfigurationAdminController::channelsAction'
+simpay_oauth_connect:
+  path: /simpay/oauth/connect
+  methods: [GET]
+  defaults:
+    _controller: 'SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController::connectAction'
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'
+
+simpay_oauth_callback:
+  path: /simpay/oauth/callback
+  methods: [GET]
+  defaults:
+    _controller: 'SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController::callbackAction'
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'
+
+simpay_oauth_provision:
+  path: /simpay/oauth/provision
+  methods: [POST]
+  defaults:
+    _controller: 'SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController::provisionAction'
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'
+
+simpay_oauth_disconnect:
+  path: /simpay/oauth/disconnect
+  methods: [POST]
+  defaults:
+    _controller: 'SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController::disconnectAction'
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'
+
+simpay_oauth_cancel:
+  path: /simpay/oauth/cancel
+  methods: [GET]
+  defaults:
+    _controller: 'SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController::cancelAction'
+    _legacy_controller: 'SimpayConfigurationAdminController'
+    _legacy_link: 'SimpayConfigurationAdminController'

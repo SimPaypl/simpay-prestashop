@@ -17,6 +17,56 @@
         </div>
     {% endif %}
 
+    {% if oauth.pending %}
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <form method="post" action="{{ path('simpay_oauth_provision') }}" class="card mb-3 border-primary" id="simpay-oauth-select">
+                    <h3 class="card-header">
+                        <i class="material-icons">link</i>
+                        {{ 'Select a SimPay payment service'|trans({}, 'Modules.Simpay.Admin') }}
+                    </h3>
+                    <div class="card-body">
+                        {% if oauth.pending.email %}
+                            <p>
+                                {{ 'Connected SimPay account:'|trans({}, 'Modules.Simpay.Admin') }}
+                                <strong>{{ oauth.pending.email }}</strong>
+                            </p>
+                        {% endif %}
+
+                        <p>{{ 'Choose the payment service this shop should use:'|trans({}, 'Modules.Simpay.Admin') }}</p>
+
+                        {% for service in oauth.pending.services %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="service_id"
+                                       id="simpay-service-{{ service.id }}" value="{{ service.id }}"
+                                       {% if service.id == oauth.pending.suggested_service_id %}checked{% endif %} required>
+                                <label class="form-check-label" for="simpay-service-{{ service.id }}">
+                                    <strong>{{ service.name ?: service.id }}</strong>
+                                    <span class="text-muted">
+                                        &middot; ID: {{ service.id }}
+                                        {% if service.url %}&middot; {{ service.url }}{% endif %}
+                                    </span>
+                                </label>
+                            </div>
+                        {% endfor %}
+
+                        <div class="alert alert-warning mt-3 mb-0">
+                            {{ 'The module will create a new API key, set the IPN URL and generate a new IPN signature key for the selected service. The previous IPN signature key will stop working immediately - if this service is also used by another shop or integration, update it there as well.'|trans({}, 'Modules.Simpay.Admin') }}
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end">
+                        <a href="{{ path('simpay_oauth_cancel') }}" class="btn btn-outline-secondary mr-2">
+                            {{ 'Cancel'|trans({}, 'Modules.Simpay.Admin') }}
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            {{ 'Connect selected service'|trans({}, 'Modules.Simpay.Admin') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
     {{ form_start(configurationForm) }}
 
     <div class="row justify-content-center">
@@ -29,15 +79,94 @@
                 </h3>
 
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        {{ 'Before configuring the payment gateway, make sure you have entered the "IPN URL address" in the SimPay panel.'|trans({}, 'Modules.Simpay.Admin') }}
+                    {{ form_widget(configurationForm.auth_method) }}
+
+                    <ul class="nav nav-pills justify-content-center mb-3" id="simpay-auth-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-simpay-auth="oauth">
+                                <i class="material-icons">bolt</i>
+                                {{ 'Connect via SimPay (recommended)'|trans({}, 'Modules.Simpay.Admin') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-simpay-auth="manual">
+                                <i class="material-icons">edit</i>
+                                {{ 'Enter credentials manually'|trans({}, 'Modules.Simpay.Admin') }}
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="simpay-auth-panel simpay-oauth-panel d-none" data-simpay-auth-panel="oauth">
+                        {% if oauth.connected %}
+                            <div class="simpay-oauth-status">
+                                <i class="material-icons simpay-oauth-status__icon">check_circle</i>
+                                <p class="simpay-oauth-status__title">
+                                    {{ 'Your shop is connected to SimPay.'|trans({}, 'Modules.Simpay.Admin') }}
+                                </p>
+                                <dl class="simpay-oauth-status__details">
+                                    {% if oauth.account_email %}
+                                        <dt>{{ 'Account:'|trans({}, 'Modules.Simpay.Admin') }}</dt>
+                                        <dd>{{ oauth.account_email }}</dd>
+                                    {% endif %}
+                                    <dt>{{ 'Payment service:'|trans({}, 'Modules.Simpay.Admin') }}</dt>
+                                    <dd>
+                                        {{ oauth.service_name ?: oauth.service_id }}
+                                        <span class="text-muted">(ID: {{ oauth.service_id }})</span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        {% else %}
+                            <p class="simpay-oauth-lead">
+                                {{ 'Log in to your SimPay account and grant access - the module will automatically create an API key, set the IPN URL and configure the IPN signature key. No copying of keys required.'|trans({}, 'Modules.Simpay.Admin') }}
+                            </p>
+                        {% endif %}
+
+                        {% if not oauth.https_ok %}
+                            <div class="alert alert-warning simpay-oauth-alert">
+                                {{ 'Connecting via SimPay requires the shop back office to be served over HTTPS. Enter the credentials manually instead.'|trans({}, 'Modules.Simpay.Admin') }}
+                                <br><small class="text-muted">{{ 'Detected callback URL:'|trans({}, 'Modules.Simpay.Admin') }} <code>{{ oauth.redirect_uri }}</code></small>
+                            </div>
+                        {% endif %}
+
+                        {% if oauth.https_ok or oauth.connected %}
+                            <div class="simpay-oauth-action">
+                                {% if oauth.https_ok %}
+                                    <a href="{{ path('simpay_oauth_connect') }}" class="btn {{ oauth.connected ? 'btn-outline-primary' : 'btn-primary btn-lg' }}">
+                                        <i class="material-icons">link</i>
+                                        {{ oauth.connected
+                                            ? 'Reconnect / change service'|trans({}, 'Modules.Simpay.Admin')
+                                            : 'Connect with SimPay'|trans({}, 'Modules.Simpay.Admin') }}
+                                    </a>
+                                {% endif %}
+                                {% if oauth.connected %}
+                                    {# submits the surrounding config form to the disconnect route (forms cannot be nested) #}
+                                    <button type="submit" class="btn btn-outline-danger"
+                                            formaction="{{ path('simpay_oauth_disconnect') }}" formmethod="post" formnovalidate
+                                            onclick="return confirm('{{ 'Are you sure you want to disconnect the shop from SimPay? SimPay payments will stop working until you connect again.'|trans({}, 'Modules.Simpay.Admin')|e('js') }}');">
+                                        <i class="material-icons">link_off</i>
+                                        {{ 'Disconnect'|trans({}, 'Modules.Simpay.Admin') }}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
 
+                    <div class="simpay-auth-panel simpay-manual-panel d-none" data-simpay-auth-panel="manual">
+                        <div class="alert alert-info">
+                            {{ 'Before configuring the payment gateway, make sure you have entered the "IPN URL address" in the SimPay panel.'|trans({}, 'Modules.Simpay.Admin') }}
+                        </div>
+
+                        <div class="form-wrapper">
+                            {{ form_row(configurationForm.service_ipn_notify_url) }}
+                            {{ form_row(configurationForm.api_password) }}
+                            {{ form_row(configurationForm.service_id) }}
+                            {{ form_row(configurationForm.service_ipn_signature_key) }}
+                        </div>
+                    </div>
+
+                    <hr class="simpay-auth-divider">
+
                     <div class="form-wrapper">
-                        {{ form_row(configurationForm.service_ipn_notify_url) }}
-                        {{ form_row(configurationForm.api_password) }}
-                        {{ form_row(configurationForm.service_id) }}
-                        {{ form_row(configurationForm.service_ipn_signature_key) }}
                         {{ form_row(configurationForm.ipn_check_ip) }}
                         {{ form_row(configurationForm.commission_mode) }}
                         {{ form_row(configurationForm.commission_split, { row_attr: { class: 'd-none' } }) }}

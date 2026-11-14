@@ -50,6 +50,12 @@ services:
     tags:
       - { name: 'controller.service_arguments' }
 
+  SimPaypl\PrestaShop\Controller\SimpayOAuthAdminController:
+    arguments:
+      - '@prestashop.module.simpay.channel_cache'
+    tags:
+      - { name: 'controller.service_arguments' }
+
   # Demo configuration text form
   prestashop.module.simpay.admin.form.simpay_form_type:
     class: 'SimPaypl\PrestaShop\Form\SimpayFormType'

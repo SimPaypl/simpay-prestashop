@@ -443,6 +443,236 @@
         <target>Przeciągnij i upuść metody płatności, aby zmienić ich kolejność.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="ca76eb7a9d9f2d72a40cb21c1734a354">
+        <source>Connecting via SimPay requires the shop back office to be served over HTTPS. Enter the credentials manually instead.</source>
+        <target>Połączenie przez SimPay wymaga, aby panel sklepu działał po HTTPS. Wprowadź dane ręcznie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="670e5f2198535b91c3e75cb220407ff9">
+        <source>Connection with SimPay was cancelled.</source>
+        <target>Połączenie z SimPay zostało anulowane.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7a9fe2cf36fea18c2065463bda1a6e1c">
+        <source>SimPay authorization failed: %error%</source>
+        <target>Autoryzacja SimPay nie powiodła się: %error%</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="689341e29f86333c9f70c2a15cd60a0c">
+        <source>Invalid or expired SimPay authorization. Please try connecting again.</source>
+        <target>Nieprawidłowa lub wygasła autoryzacja SimPay. Spróbuj połączyć się ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c9e2eaf93327cba3399d3cd18d4f5ce4">
+        <source>No active payment services were found on your SimPay account. Create a payment service in the SimPay panel first.</source>
+        <target>Na Twoim koncie SimPay nie znaleziono aktywnych usług płatności. Najpierw utwórz usługę płatności w panelu SimPay.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="848f63f715df822f34537ecedda96cf9">
+        <source>The SimPay authorization has expired. Please connect again.</source>
+        <target>Autoryzacja SimPay wygasła. Połącz się ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fdb4b228d47947fb470907cfffaf8904">
+        <source>Please select a payment service.</source>
+        <target>Wybierz usługę płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="79ef606cfe344210681f53dd0adec56c">
+        <source>The shop has been connected to SimPay service "%service%". API key, IPN URL and IPN signature key were configured automatically.</source>
+        <target>Sklep został połączony z usługą SimPay „%service%”. Klucz API, adres IPN oraz klucz podpisu IPN zostały skonfigurowane automatycznie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="da41b89b0db11596e1c2a1d396a56900">
+        <source>Could not connect to SimPay: %error%</source>
+        <target>Nie udało się połączyć z SimPay: %error%</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1f75474360e76cbadae7da94461a612c">
+        <source>Select a SimPay payment service</source>
+        <target>Wybierz usługę płatności SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d6272ce367f5c62dc40f11d67d6c98f3">
+        <source>Connected SimPay account:</source>
+        <target>Połączone konto SimPay:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a78e35d9baf4d3b69bdfc5029606b5e1">
+        <source>Choose the payment service this shop should use:</source>
+        <target>Wybierz usługę płatności, z której ma korzystać ten sklep:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c0d35a2b2bee0cbad33c1c0d8c4abc51">
+        <source>The module will create a new API key, set the IPN URL and generate a new IPN signature key for the selected service. The previous IPN signature key will stop working immediately - if this service is also used by another shop or integration, update it there as well.</source>
+        <target>Moduł utworzy nowy klucz API, ustawi adres IPN i wygeneruje nowy klucz podpisu IPN dla wybranej usługi. Poprzedni klucz podpisu IPN natychmiast przestanie działać – jeśli ta usługa jest używana także przez inny sklep lub integrację, zaktualizuj go również tam.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ea4788705e6873b424c65e91c2846b19">
+        <source>Cancel</source>
+        <target>Anuluj</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cdd9ec2673a5a7994fa522a970c5bcdd">
+        <source>Connect selected service</source>
+        <target>Połącz wybraną usługę</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f538405b4f9c1afb088f5fb7ec97c638">
+        <source>Connect via SimPay (recommended)</source>
+        <target>Połącz przez SimPay (zalecane)</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5bcc093b45cff5b080a36c487ac253b3">
+        <source>Enter credentials manually</source>
+        <target>Wprowadź dane ręcznie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d9c0eea86452a13c264ee4187988f021">
+        <source>Your shop is connected to SimPay.</source>
+        <target>Twój sklep jest połączony z SimPay.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b94df8cac620232ab606b8fa7fa83296">
+        <source>Account:</source>
+        <target>Konto:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f7807953bbc52374897e5d0c451e3bb">
+        <source>Payment service:</source>
+        <target>Usługa płatności:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="344474bf48332ef77dc39a238a58c1c8">
+        <source>Log in to your SimPay account and grant access - the module will automatically create an API key, set the IPN URL and configure the IPN signature key. No copying of keys required.</source>
+        <target>Zaloguj się na swoje konto SimPay i udziel dostępu – moduł automatycznie utworzy klucz API, ustawi adres IPN i skonfiguruje klucz podpisu IPN. Bez ręcznego kopiowania kluczy.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ce484757c94faff5246a333d555c2c4f">
+        <source>Reconnect / change service</source>
+        <target>Połącz ponownie / zmień usługę</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="15f2c6b813dec28adb80a004f12a9c61">
+        <source>Connect with SimPay</source>
+        <target>Połącz z SimPay</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c11e1d9497b981e84211281da6a172f8">
+        <source>Detected callback URL:</source>
+        <target>Wykryty adres powrotu:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d7d5f62a44517a0237278d7048dabea6">
+        <source>The shop has been disconnected from SimPay. SimPay payments will not work until you connect again or enter the credentials manually.</source>
+        <target>Sklep został odłączony od SimPay. Płatności SimPay nie będą działać, dopóki nie połączysz się ponownie lub nie wprowadzisz danych ręcznie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1f39878416046bdf7a9591f8808b49e3">
+        <source>Are you sure you want to disconnect the shop from SimPay? SimPay payments will stop working until you connect again.</source>
+        <target>Czy na pewno chcesz odłączyć sklep od SimPay? Płatności SimPay przestaną działać do czasu ponownego połączenia.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="42ae25231906c83927831e0ef7c317ac">
+        <source>Disconnect</source>
+        <target>Rozłącz</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1018e294527cda8dca6c5d116e816f63">
+        <source>The selected service uses IPN version %version%, but this module supports IPN 2.0 only. Change the IPN version to 2.0 in the service settings in the SimPay panel, then select the service again. Nothing was changed.</source>
+        <target>Wybrana usługa korzysta z IPN w wersji %version%, a moduł obsługuje wyłącznie IPN 2.0. Zmień wersję IPN na 2.0 w ustawieniach usługi w panelu SimPay i wybierz usługę ponownie. Niczego nie zmieniono.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8cdb9411aa6e07c4cd2f18eeae37e7c2">
+        <source>Select at least one product or the shipping cost to refund.</source>
+        <target>Zaznacz co najmniej jeden produkt lub koszt dostawy do zwrotu.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b7512b4c8f05a0de3f19d69b7efac899">
+        <source>The selected quantity exceeds what can still be refunded. Reload the page and try again.</source>
+        <target>Wybrana ilość przekracza to, co można jeszcze zwrócić. Odśwież stronę i spróbuj ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9844c4ba310202c464196f1fc1cba5a7">
+        <source>This refund form was already submitted or has expired. Check the refund list before trying again.</source>
+        <target>Ten formularz zwrotu został już wysłany lub wygasł. Sprawdź listę zwrotów, zanim spróbujesz ponownie.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ea9cf7e47ff33b2be14e6dd07cbcefc6">
+        <source>Shipping</source>
+        <target>Dostawa</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="be5df171865ed9f8222dad2b1e244379">
+        <source>Refunded or in progress</source>
+        <target>Zwrócono lub w trakcie</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f8cd5bd5530f7bac6100fe3b2e695dd8">
+        <source>Left to refund</source>
+        <target>Pozostało do zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="35b143ac437ea84d77fa21a7bab72f61">
+        <source>Refund %amount% to the customer? This cannot be undone.</source>
+        <target>Zwrócić klientowi %amount%? Tej operacji nie można cofnąć.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="deb10517653c255364175796ace3553f">
+        <source>Product</source>
+        <target>Produkt</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6c957f72dc8cdacc75762f2cbdcdfaf2">
+        <source>Unit price</source>
+        <target>Cena jedn.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ee095b00f8c055edf94c8d723aa390c1">
+        <source>Quantity to refund</source>
+        <target>Ilość do zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="03f523da11843e225866d26cb6df5f06">
+        <source>Already refunded: %refunded% of %ordered%</source>
+        <target>Już zwrócono: %refunded% z %ordered%</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dcfad97a35eea6a7d2008a14ee421450">
+        <source>max %max%</source>
+        <target>maks. %max%</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c1a8be66fb122f44b0ea3ee8eb10a699">
+        <source>Refund shipping</source>
+        <target>Zwróć dostawę</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2e3a70083218e80e83f082469e2ef917">
+        <source>Prices include the order discount (−%percent%%), so the refund matches what the customer actually paid.</source>
+        <target>Ceny uwzględniają rabat zamówienia (−%percent%%), więc zwrot odpowiada temu, co klient faktycznie zapłacił.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f7e3d704119df8b5cc393b5bce5bee0">
+        <source>Select everything</source>
+        <target>Zaznacz wszystko</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dd8366c780bd2ce22a842d6384fec8b2">
+        <source>Refund amount</source>
+        <target>Kwota zwrotu</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="76f0ed934de85cc7131910b32ede7714">
+        <source>Refund</source>
+        <target>Zwróć</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="13937b782fe44bf8bc4cd340615c85eb">
+        <source>Refunded items</source>
+        <target>Zwrócone pozycje</target>
+        <note>Line: </note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

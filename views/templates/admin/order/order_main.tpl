@@ -109,43 +109,123 @@
               <div class="simpay-alert mb-2">{$simpay_refund_status nofilter}</div>
             {/if}
 
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <p class="text-muted mb-0">{l s='Paid' d='Modules.Simpay.Admin'}</p>
+                <p class="font-weight-bold mb-0" data-simpay-money="{$simpay_refundable.paid|escape:'html':'UTF-8'}">{$simpay_refundable.paid|string_format:"%.2f"} {$simpay_currency_sign|escape:'html':'UTF-8'}</p>
+              </div>
+              <div class="col-sm-4">
+                <p class="text-muted mb-0">{l s='Refunded or in progress' d='Modules.Simpay.Admin'}</p>
+                <p class="font-weight-bold mb-0" data-simpay-money="{$simpay_refundable.refunded|escape:'html':'UTF-8'}">{$simpay_refundable.refunded|string_format:"%.2f"} {$simpay_currency_sign|escape:'html':'UTF-8'}</p>
+              </div>
+              <div class="col-sm-4">
+                <p class="text-muted mb-0">{l s='Left to refund' d='Modules.Simpay.Admin'}</p>
+                <p class="font-weight-bold mb-0" data-simpay-money="{$simpay_refundable.remaining|escape:'html':'UTF-8'}">{$simpay_refundable.remaining|string_format:"%.2f"} {$simpay_currency_sign|escape:'html':'UTF-8'}</p>
+              </div>
+            </div>
+
             {if $simpay_is_refund_possible}
-              <form method="post" action="{$simpay_refund_action|escape:'html':'UTF-8'}" data-simpay-refund-form>
-                <div class="mb-3">
-                  <div class="form-row align-items-end">
-                    <div class="col-md-2">
-                      <label class="form-control-label mb-1">{l s='Refund type' d='Modules.Simpay.Admin'}</label>
-                      <select class="custom-select pt-2 h-100" name="simpay_refund_type" data-simpay-refund-type>
-                        <option value="full">{l s='Full refund' d='Modules.Simpay.Admin'}</option>
-                        <option value="partial">{l s='Partial refund' d='Modules.Simpay.Admin'}</option>
-                      </select>
-                    </div>
-                    <div class="col-md-2">
-                      <label class="form-control-label mb-1">{l s='Amount' d='Modules.Simpay.Admin'}</label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="{$simpay_refund_max_amount|escape:'html':'UTF-8'}"
-                          class="form-control"
-                          name="simpay_refund_amount"
-                          data-simpay-refund-amount
-                        >
-                        <div class="input-group-append">
-                          <span class="input-group-text">{$simpay_currency_sign|escape:'html':'UTF-8'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <button type="submit" name="simpay_refund_submit" value="1" class="btn btn-primary">
-                        {l s='Create refund' d='Modules.Simpay.Admin'}
-                      </button>
-                    </div>
+              <form method="post"
+                    action="{$simpay_refund_action|escape:'html':'UTF-8'}"
+                    class="simpay-refund-form"
+                    data-simpay-refund-form
+                    data-currency="{$simpay_currency_iso|escape:'html':'UTF-8'}"
+                    data-locale="{$simpay_locale|escape:'html':'UTF-8'}"
+                    data-remaining="{$simpay_refundable.remaining|escape:'html':'UTF-8'}"
+                    data-msg-confirm="{l s='Refund %amount% to the customer? This cannot be undone.' d='Modules.Simpay.Admin' js=1}">
+                <input type="hidden" name="simpay_refund_nonce" value="{$simpay_refund_nonce|escape:'html':'UTF-8'}">
+
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th>{l s='Product' d='Modules.Simpay.Admin'}</th>
+                    <th class="text-right">{l s='Unit price' d='Modules.Simpay.Admin'}</th>
+                    <th class="text-center">{l s='Quantity to refund' d='Modules.Simpay.Admin'}</th>
+                    <th class="text-right">{l s='Amount' d='Modules.Simpay.Admin'}</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {foreach $simpay_refundable.items as $item}
+                    <tr class="{if $item.qty_available == 0}simpay-refund-items__row--done{/if}">
+                      <td>
+                        {$item.name|escape:'html':'UTF-8'}
+                        {if $item.reference}<small class="text-muted d-block">{$item.reference|escape:'html':'UTF-8'}</small>{/if}
+                        {if $item.qty_refunded > 0}
+                          <small class="text-muted d-block">
+                            {l s='Already refunded: %refunded% of %ordered%' sprintf=['%refunded%' => $item.qty_refunded, '%ordered%' => $item.qty_ordered] d='Modules.Simpay.Admin'}
+                          </small>
+                        {/if}
+                      </td>
+                      <td class="text-right align-middle" data-simpay-money="{$item.unit_amount|escape:'html':'UTF-8'}">
+                        {$item.unit_amount|string_format:"%.2f"} {$simpay_currency_sign|escape:'html':'UTF-8'}
+                      </td>
+                      <td class="text-center align-middle">
+                        {if $item.qty_available > 0}
+                          <div class="input-group input-group-sm simpay-refund-qty mx-auto">
+                            <input type="number"
+                                   class="form-control text-center"
+                                   name="simpay_refund_qty[{$item.id_order_detail|intval}]"
+                                   value="0" min="0" max="{$item.qty_available|intval}" step="1"
+                                   inputmode="numeric"
+                                   data-simpay-refund-qty
+                                   data-unit="{$item.unit_amount|escape:'html':'UTF-8'}">
+                            <div class="input-group-append">
+                              <span class="input-group-text">/ {$item.qty_available|intval}</span>
+                            </div>
+                          </div>
+                        {else}
+                          <span class="badge badge-info">{l s='Refunded' d='Modules.Simpay.Admin'}</span>
+                        {/if}
+                      </td>
+                      <td class="text-right align-middle" data-simpay-line-total>&ndash;</td>
+                    </tr>
+                  {/foreach}
+
+                  {if $simpay_refundable.shipping.amount > 0}
+                    <tr class="{if !$simpay_refundable.shipping.available}simpay-refund-items__row--done{/if}">
+                      <td>{l s='Shipping' d='Modules.Simpay.Admin'}</td>
+                      <td class="text-right align-middle" data-simpay-money="{$simpay_refundable.shipping.amount|escape:'html':'UTF-8'}">
+                        {$simpay_refundable.shipping.amount|string_format:"%.2f"} {$simpay_currency_sign|escape:'html':'UTF-8'}
+                      </td>
+                      <td class="text-center align-middle">
+                        {if $simpay_refundable.shipping.available}
+                          <div class="md-checkbox d-inline-block">
+                            <label class="mb-0">
+                              <input type="checkbox" name="simpay_refund_shipping" value="1"
+                                     data-simpay-refund-shipping
+                                     data-unit="{$simpay_refundable.shipping.amount|escape:'html':'UTF-8'}">
+                              <i class="md-checkbox-control"></i>
+                              {l s='Refund shipping' d='Modules.Simpay.Admin'}
+                            </label>
+                          </div>
+                        {else}
+                          <span class="badge badge-info">{l s='Refunded' d='Modules.Simpay.Admin'}</span>
+                        {/if}
+                      </td>
+                      <td class="text-right align-middle" data-simpay-line-total>&ndash;</td>
+                    </tr>
+                  {/if}
+                  </tbody>
+                </table>
+
+                {if $simpay_refundable.discount_percent > 0}
+                  <div class="alert alert-info" role="alert">
+                    {l s='Prices include the order discount (−%percent%%), so the refund matches what the customer actually paid.' sprintf=['%percent%' => $simpay_refundable.discount_percent] d='Modules.Simpay.Admin'}
                   </div>
-                  <small class="text-muted d-block mt-1">
-                    {l s='Select full or partial refund. Partial refunds require an amount.' d='Modules.Simpay.Admin'}
-                  </small>
+                {/if}
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between border-top pt-3">
+                  <button type="button" class="btn btn-outline-secondary" data-simpay-refund-select-all>
+                    {l s='Select everything' d='Modules.Simpay.Admin'}
+                  </button>
+
+                  <div class="d-flex align-items-center ml-auto">
+                    <span class="text-muted mr-2">{l s='Refund amount' d='Modules.Simpay.Admin'}:</span>
+                    <strong class="mr-3" data-simpay-refund-total>&ndash;</strong>
+                    <button type="submit" name="simpay_refund_submit" value="1" class="btn btn-primary" data-simpay-refund-submit disabled>
+                      {l s='Refund' d='Modules.Simpay.Admin'} <span data-simpay-refund-submit-amount></span>
+                    </button>
+                  </div>
                 </div>
               </form>
             {/if}
@@ -155,7 +235,7 @@
                 <thead>
                 <tr>
                   <th class="table-head-date">{l s='Refund date' d='Modules.Simpay.Admin'}</th>
-                  <th class="table-head-type">{l s='Refund type' d='Modules.Simpay.Admin'}</th>
+                  <th class="table-head-type">{l s='Refunded items' d='Modules.Simpay.Admin'}</th>
                   <th class="table-head-transaction">{l s='Transaction ID' d='Modules.Simpay.Admin'}</th>
                   <th class="table-head-transaction">{l s='Refund ID' d='Modules.Simpay.Admin'}</th>
                   <th class="table-head-amount">{l s='Amount' d='Modules.Simpay.Admin'}</th>
@@ -177,7 +257,9 @@
                   <tr>
                     <td data-role="date-column">{$refund.created_at|escape:'html':'UTF-8'}</td>
                     <td data-role="type-column">
-                      {if $refund.refund_type == 'full'}
+                      {if !empty($refund.items_label)}
+                        {$refund.items_label|escape:'html':'UTF-8'}
+                      {elseif $refund.refund_type == 'full'}
                         {l s='Full refund' d='Modules.Simpay.Admin'}
                       {elseif $refund.refund_type == 'partial'}
                         {l s='Partial refund' d='Modules.Simpay.Admin'}

@@ -295,7 +295,7 @@
       </trans-unit>
       <trans-unit id="91d1fc4990d4fff923bde3c6c70b7e16">
         <source>BLIK code</source>
-        <target>kod BLIK</target>
+        <target>Kod BLIK</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="e1d5035ecc47d63d30d9143e872e38ca">
@@ -311,11 +311,6 @@
       <trans-unit id="eefe56bde11b59e9d66258ea8b744b8c">
         <source>You’ll be redirected to the secure payment gateway.</source>
         <target>Zostaniesz przekierowany do bezpiecznej bramki płatniczej.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="0da0a5ab420b2906c2c3c593d6d78647">
-        <source>Please select a payment method</source>
-        <target>Proszę wybrać metodę płatności.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="c8d46e411afd1674eeb3295a8035563f">
@@ -449,9 +444,19 @@ Kliknij poniższy przycisk, aby kontynuować i sfinalizować płatność.</targe
         <target>Przejdź do szczegółów zamówienia</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="simpay_commission_notice_order">
+              <trans-unit id="simpay_commission_notice_order">
         <source>A transaction fee was charged during payment. This fee was visible at checkout and on the payment gateway.</source>
         <target>Podczas płatności została pobrana opłata transakcyjna. Opłata była widoczna przy składaniu zamówienia oraz na bramce płatności.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e3a13d22b999cc38168487e7e6546c80">
+        <source>Select your bank or payment method</source>
+        <target>Wybierz bank lub metodę płatności</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d3287dd51f6daf210fd5c49d2cb566da">
+        <source>Pay with BLIK</source>
+        <target>Zapłać BLIKIEM</target>
         <note>Line: </note>
       </trans-unit>
     </body>

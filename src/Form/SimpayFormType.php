@@ -32,6 +32,9 @@ final class SimpayFormType extends TranslatorAwareType
                 'disabled' => true,
                 'data' => (new Link())->getModuleLink('simpay', 'notify', [], true),
             ])
+            ->add('auth_method', HiddenType::class, [
+                'required' => false,
+            ])
             ->add('api_password', TextType::class, [
                 'label' => $this->trans('API password', 'Modules.Simpay.Admin'),
                 'help' => $this->trans(
